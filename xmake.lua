@@ -1,3 +1,7 @@
+set_policy("package.install_always", true)
+add_rules("mode.release", "mode.debug")
+add_rules("plugin.compile_commands.autoupdate", {outputdir = "./"})
+
 add_languages("cxx20")
 add_repositories("tab-repo https://github.com/TabNahida/repo-xmake.git")
 add_requires("tstring")

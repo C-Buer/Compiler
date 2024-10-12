@@ -2,18 +2,8 @@
 #define LEXER_HPP
 
 #include "TString.hpp"
-#include <unordered_set>
 
-namespace std
-{
-template <> struct hash<TString>
-{
-    size_t operator()(const TString &str) const
-    {
-        return std::hash<std::string>()(str.c_str());
-    }
-};
-} // namespace std
+#include <unordered_set>
 
 enum class TokenType
 {

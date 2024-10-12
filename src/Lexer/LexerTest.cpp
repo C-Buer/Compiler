@@ -1,7 +1,8 @@
 #include "Lexer/Lexer.hpp"
 
-#include <iostream>
-
+void test_lexer()
+{
+    TString input(R"(
 void test_lexer()
 {
     TString input("int x = 42; if (x > 10) return x + 1;");
@@ -11,32 +12,66 @@ void test_lexer()
     Token token = lexer.next_token();
     while (token.type != TokenType::EndOfFile)
     {
-        puts("Token: Type = ");
+        std::puts("Token: Type = ");
         switch (token.type)
         {
         case TokenType::Identifier:
-            puts("Identifier");
+            std::puts("Identifier");
             break;
         case TokenType::Number:
-            puts("Number");
+            std::puts("Number");
             break;
         case TokenType::Keyword:
-            puts("Keyword");
+            std::puts("Keyword");
             break;
         case TokenType::Symbol:
-            puts("Symbol");
+            std::puts("Symbol");
             break;
         case TokenType::Operator:
-            puts("Operator");
+            std::puts("Operator");
             break;
         case TokenType::StringLiteral:
-            puts("StringLiteral");
+            std::puts("StringLiteral");
             break;
         case TokenType::EndOfFile:
-            puts("EndOfFile");
+            std::puts("EndOfFile");
             break;
         }
-        puts(TString(", Value = ") + token.value);
+        std::puts(TString(", Value = ") + token.value);
         token = lexer.next_token();
+    }
+})");
+    Lexer lexer(input);
+    lexer.add_keyword("mykeyword");
+    lexer.add_operator("++");
+
+    for (Token token = lexer.next_token(); token.type != TokenType::EndOfFile; token = lexer.next_token())
+    {
+        std::fputs("Token: Type = ", stdout);
+        switch (token.type)
+        {
+        case TokenType::Identifier:
+            std::fputs("Identifier", stdout);
+            break;
+        case TokenType::Number:
+            std::fputs("Number", stdout);
+            break;
+        case TokenType::Keyword:
+            std::fputs("Keyword", stdout);
+            break;
+        case TokenType::Symbol:
+            std::fputs("Symbol", stdout);
+            break;
+        case TokenType::Operator:
+            std::fputs("Operator", stdout);
+            break;
+        case TokenType::StringLiteral:
+            std::fputs("StringLiteral", stdout);
+            break;
+        case TokenType::EndOfFile:
+            std::fputs("EndOfFile", stdout);
+            break;
+        }
+        std::fputs(", Value = "_T + token.value + "\n", stdout);
     }
 }

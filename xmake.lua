@@ -1,16 +1,7 @@
 set_policy("package.install_always", true)
 add_rules("mode.release", "mode.debug")
 
-option("tab_repo")
-    set_default(true)
-    set_showmenu(true)
-option_end()
-
-add_languages("cxx20")
-
-if not has_config("tab_repo") then
-    add_repositories("tab-repo https://github.com/TabNahida/repo-xmake.git")
-end
+add_repositories("tab-repo https://github.com/TabNahida/repo-xmake.git")
 add_requires("tstring")
 
 target("Lexer")

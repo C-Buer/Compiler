@@ -1,4 +1,3 @@
-set_policy("package.install_always", true)
 add_rules("mode.release", "mode.debug")
 
 add_repositories("tab-repo https://github.com/TabNahida/repo-xmake.git")

@@ -1,47 +1,51 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
-
 #include "TString.hpp"
-
 #include <unordered_set>
+#include <vector>
 
 enum class TokenType
 {
     Identifier,
-    Number,
     Keyword,
-    Symbol,
-    Operator,
-    StringLiteral,
-    EndOfFile
+    Number,
+    String,
+    EndOfFile,
+    Unknown
 };
 
 struct Token
 {
     TokenType type;
-    TString value;
-
-    Token(TokenType type, const TString &value);
+    TString lexeme;
+    int line;
+    int column;
 };
 
 class Lexer
 {
-  private:
-    TString source;
-    size_t position;
-    std::unordered_set<TString> keywords;
-    std::unordered_set<TString> operators;
-
-    char current_char() const;
-    void advance();
-    void skip_whitespace();
-    bool is_keyword(const TString &str) const;
-
   public:
-    Lexer(const TString &source);
-    void add_keyword(const TString &keyword);
-    void add_operator(const TString &op);
-    Token next_token();
+    Lexer(const std::string &source);
+
+    void addKeyword(const TString &keyword);
+
+    std::vector<Token> tokenize();
+
+  private:
+    std::string source_;
+    size_t current_;
+    int line_;
+    int column_;
+    std::unordered_set<TString> keywords_;
+
+    char peek() const;
+    char advance();
+    bool isAtEnd() const;
+    void skipWhitespace();
+    Token makeToken(TokenType type, const TString &lexeme);
+    Token identifier();
+    Token number();
+    Token stringLiteral();
 };
 
-#endif // LEXER_HPP
+#endif

@@ -1,124 +1,150 @@
-#include "Lexer/Lexer.hpp"
-
+#include "Lexer\Lexer.hpp"
 #include <cctype>
 
-Token::Token(TokenType type, const TString &value) : type(type), value(value)
+Lexer::Lexer(const std::string &source) : source_(source), current_(0), line_(1), column_(1)
 {
 }
 
-Lexer::Lexer(const TString &source) : source(source), position(0)
+void Lexer::addKeyword(const TString &keyword)
 {
-    // Default keywords and operators
-    keywords = {"int8",   "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float",
-                "double", "if",    "else",  "for",   "while", "return", "void",   "class",  "struct"};
-    operators = {"+", "-", "*", "/", "=", "==", "!=", "<", "<=", ">", ">="};
+    keywords_.insert(keyword);
 }
 
-char Lexer::current_char() const
+std::vector<Token> Lexer::tokenize()
 {
-    if (position < source.size())
+    std::vector<Token> tokens;
+    while (!isAtEnd())
     {
-        return source[position];
+        skipWhitespace();
+        if (isAtEnd())
+            break;
+        size_t start = current_;
+        int startColumn = column_;
+
+        char c = advance();
+        if (std::isalpha(c) || c == '_')
+        {
+            current_--;
+            column_--;
+            tokens.emplace_back(identifier());
+        }
+        else if (std::isdigit(c))
+        {
+            current_--;
+            column_--;
+            tokens.emplace_back(number());
+        }
+        else if (c == '"')
+        {
+            tokens.emplace_back(stringLiteral());
+        }
+        else
+        {
+            TString lexeme(std::string(1, c));
+            tokens.emplace_back(makeToken(TokenType::Unknown, lexeme));
+        }
     }
-    return '\0';
+    tokens.emplace_back(Token{TokenType::EndOfFile, TString(""), line_, column_});
+    return tokens;
 }
 
-void Lexer::advance()
+char Lexer::peek() const
 {
-    if (position < source.size())
+    if (isAtEnd())
+        return '\0';
+    return source_[current_];
+}
+
+char Lexer::advance()
+{
+    char c = source_[current_++];
+    if (c == '\n')
     {
-        ++position;
+        line_++;
+        column_ = 1;
+    }
+    else
+    {
+        column_++;
+    }
+    return c;
+}
+
+bool Lexer::isAtEnd() const
+{
+    return current_ >= source_.size();
+}
+
+void Lexer::skipWhitespace()
+{
+    while (!isAtEnd())
+    {
+        char c = peek();
+        if (c == ' ' || c == '\r' || c == '\t' || c == '\n')
+        {
+            advance();
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
-void Lexer::skip_whitespace()
+Token Lexer::makeToken(TokenType type, const TString &lexeme)
 {
-    while (std::isspace(current_char()))
+    return Token{type, lexeme, line_, column_};
+}
+
+Token Lexer::identifier()
+{
+    size_t start = current_ - 1;
+    while (std::isalnum(peek()) || peek() == '_')
     {
         advance();
     }
-}
-
-bool Lexer::is_keyword(const TString &str) const
-{
-    return keywords.find(str) != keywords.end();
-}
-
-void Lexer::add_keyword(const TString &keyword)
-{
-    keywords.insert(keyword);
-}
-
-void Lexer::add_operator(const TString &op)
-{
-    operators.insert(op);
-}
-
-Token Lexer::next_token()
-{
-    skip_whitespace();
-
-    char ch = current_char();
-    if (ch == '\0')
+    size_t end = current_;
+    std::string lex = source_.substr(start, end - start);
+    TString ts(lex);
+    if (keywords_.find(ts) != keywords_.end())
     {
-        return Token(TokenType::EndOfFile, "");
+        return makeToken(TokenType::Keyword, ts);
     }
+    return makeToken(TokenType::Identifier, ts);
+}
 
-    if (std::isalpha(ch) || ch == '_')
+Token Lexer::number()
+{
+    size_t start = current_ - 1;
+    while (std::isdigit(peek()))
     {
-        size_t start = position;
-        while (std::isalnum(current_char()) || current_char() == '_')
-        {
-            advance();
-        }
-        TString identifier = source.substr(start, position - start);
-        if (is_keyword(identifier))
-        {
-            return Token(TokenType::Keyword, identifier);
-        }
-        return Token(TokenType::Identifier, identifier);
-    }
-
-    if (std::isdigit(ch))
-    {
-        size_t start = position;
-        while (std::isdigit(current_char()))
-        {
-            advance();
-        }
-        return Token(TokenType::Number, source.substr(start, position - start));
-    }
-
-    if (ch == '"')
-    {
-        size_t start = position;
         advance();
-        while (current_char() != '"' && current_char() != '\0')
-        {
-            advance();
-        }
-        if (current_char() == '"')
-        {
-            advance();
-        }
-        return Token(TokenType::StringLiteral, source.substr(start, position - start));
     }
+    size_t end = current_;
+    std::string lex = source_.substr(start, end - start);
+    return makeToken(TokenType::Number, TString(lex));
+}
 
-    if (std::ispunct(ch))
+Token Lexer::stringLiteral()
+{
+    size_t start = current_;
+    while (peek() != '"' && !isAtEnd())
     {
-        // Handle operators and symbols
-        for (const auto &op : operators)
+        if (peek() == '\n')
         {
-            if (source.substr(position, op.size()) == op)
-            {
-                position += op.size();
-                return Token(TokenType::Operator, op);
-            }
+            line_++;
+            column_ = 1;
         }
         advance();
-        return Token(TokenType::Symbol, TString(ch));
+    }
+
+    if (isAtEnd())
+    {
+        return makeToken(TokenType::Unknown, TString("Unterminated string"));
     }
 
     advance();
-    return Token(TokenType::Symbol, TString(ch));
+    size_t end = current_ - 1;
+    std::string lex = source_.substr(start, end - start);
+    return makeToken(TokenType::String, TString(lex));
 }

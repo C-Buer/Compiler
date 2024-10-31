@@ -25,7 +25,7 @@ struct Token
 class Lexer
 {
   public:
-    Lexer(const std::string &source);
+    Lexer(const TString &source);
 
     void addKeyword(const TString &keyword);
 

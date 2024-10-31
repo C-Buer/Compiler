@@ -1,7 +1,7 @@
 #include "Lexer\Lexer.hpp"
 #include <cctype>
 
-Lexer::Lexer(const std::string &source) : source_(source), current_(0), line_(1), column_(1)
+Lexer::Lexer(const TString &source) : source_(source), current_(0), line_(1), column_(1)
 {
 }
 

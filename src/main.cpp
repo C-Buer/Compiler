@@ -3,18 +3,18 @@
 
 int main()
 {
-    std::string sourceCode = R"(
+    TString sourceCode = R"(
         if (x == 10) {
             print("x is ten");
         }
     )";
 
     Lexer lexer(sourceCode);
-    lexer.addKeyword(TString("if"));
-    lexer.addKeyword(TString("else"));
-    lexer.addKeyword(TString("for"));
-    lexer.addKeyword(TString("while"));
-    lexer.addKeyword(TString("print"));
+    lexer.addKeyword("if"_T);
+    lexer.addKeyword("else"_T);
+    lexer.addKeyword("for"_T);
+    lexer.addKeyword("while"_T);
+    lexer.addKeyword("print"_T);
 
     std::vector<Token> tokens = lexer.tokenize();
 

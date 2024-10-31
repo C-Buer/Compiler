@@ -1,5 +1,6 @@
 add_rules("mode.release", "mode.debug")
 
+add_languages("cxx20")
 add_requires("tstring")
 
 target("Lexer")

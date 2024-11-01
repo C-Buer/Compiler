@@ -1,24 +1,17 @@
 #include "Lexer\Lexer.hpp"
-#include <algorithm>
 #include <cctype>
+#include <format>
+#include <unordered_map>
 
-Lexer::Lexer(const TString &source) : source_(source), current_(0), line_(1), column_(1)
+TString Token::printToken() const
 {
-}
+    static std::unordered_map<TokenType, TString> tokenTypeMap = {
+        {TokenType::Identifier, "Identifier"}, {TokenType::Keyword, "Keyword"},   {TokenType::Number, "Number"},
+        {TokenType::String, "String"},         {TokenType::Operator, "Operator"}, {TokenType::EndOfFile, "EndOfFile"},
+        {TokenType::Unknown, "Unknown"}};
 
-void Lexer::addKeyword(const TString &keyword)
-{
-    keywords_.insert(keyword);
-}
-
-void Lexer::addOperator(const TString &op)
-{
-    operators_.push_back(op);
-}
-
-void Lexer::sortOperators()
-{
-    std::ranges::sort(operators_, std::ranges::greater());
+    return std::format("Type: {}, Lexeme: \"{}\", Line: {}, Column: {}\n", tokenTypeMap[type].c_str(), lexeme.c_str(),
+                       line, column);
 }
 
 std::vector<Token> Lexer::tokenize()

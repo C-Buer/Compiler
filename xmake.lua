@@ -1,7 +1,7 @@
 add_rules("mode.release", "mode.debug")
 
 add_languages("cxx20")
-add_requires("tstring")
+add_requires("tstring >=0.1.20")
 
 target("Lexer")
     set_kind("static")

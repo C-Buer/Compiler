@@ -3,14 +3,15 @@
 
 int main()
 {
-    TString sourceCode = R"(
-        if (x == 10) {
-            print("x is ten");
-        } else if (x != 20) {
-            print("x is not twenty");
-        }
-        x += 5;
-    )";
+    TString sourceCode =
+        R"(
+            if (x == 10) {
+                print("x is ten");
+            } else if (x != 20) {
+                print("x is not twenty");
+            }
+            x += 5;
+        )";
 
     Lexer lexer(sourceCode);
 
@@ -38,6 +39,7 @@ int main()
     lexer.addOperator("<"_T);
     lexer.addOperator(">"_T);
     lexer.addOperator("("_T);
+    lexer.addOperator(")"_T);
     lexer.addOperator("_T"_T);
     lexer.addOperator("{"_T);
     lexer.addOperator("}"_T);

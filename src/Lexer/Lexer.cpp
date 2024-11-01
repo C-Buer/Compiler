@@ -1,18 +1,5 @@
 #include "Lexer\Lexer.hpp"
 #include <cctype>
-#include <format>
-#include <unordered_map>
-
-TString Token::printToken() const
-{
-    static std::unordered_map<TokenType, TString> tokenTypeMap = {
-        {TokenType::Identifier, "Identifier"}, {TokenType::Keyword, "Keyword"},   {TokenType::Number, "Number"},
-        {TokenType::String, "String"},         {TokenType::Operator, "Operator"}, {TokenType::EndOfFile, "EndOfFile"},
-        {TokenType::Unknown, "Unknown"}};
-
-    return std::format("Type: {}, Lexeme: \"{}\", Line: {}, Column: {}\n", tokenTypeMap[type].c_str(), lexeme.c_str(),
-                       line, column);
-}
 
 std::vector<Token> Lexer::tokenize()
 {

@@ -4,8 +4,10 @@
 #include <TString.hpp>
 
 #include <algorithm>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 
 enum class TokenType
 {
@@ -24,7 +26,7 @@ struct Token
     TString lexeme;
     int line;
     int column;
-    TString printToken() const;
+    inline TString printToken() const;
 };
 
 class Lexer
@@ -59,6 +61,16 @@ class Lexer
 
     inline void sortOperators();
 };
+
+TString Token::printToken() const
+{
+    static std::unordered_map<TokenType, TString> tokenTypeMap = {
+        {TokenType::Identifier, "Identifier"}, {TokenType::Keyword, "Keyword"},   {TokenType::Number, "Number"},
+        {TokenType::String, "String"},         {TokenType::Operator, "Operator"}, {TokenType::EndOfFile, "EndOfFile"},
+        {TokenType::Unknown, "Unknown"}};
+
+    return std::format("Type: {}, Lexeme: \"{}\", Line: {}, Column: {}\n", tokenTypeMap[type], lexeme, line, column);
+}
 
 Lexer::Lexer(const TString &source) : source_(source), current_(0), line_(1), column_(1)
 {

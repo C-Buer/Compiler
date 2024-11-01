@@ -15,35 +15,35 @@ int main()
 
     Lexer lexer(sourceCode);
 
-    lexer.addKeyword("if"_T);
-    lexer.addKeyword("else"_T);
-    lexer.addKeyword("for"_T);
-    lexer.addKeyword("while"_T);
-    lexer.addKeyword("print"_T);
+    lexer.addKeyword("if");
+    lexer.addKeyword("else");
+    lexer.addKeyword("for");
+    lexer.addKeyword("while");
+    lexer.addKeyword("print");
 
-    lexer.addOperator("=="_T);
-    lexer.addOperator("!="_T);
-    lexer.addOperator("<="_T);
-    lexer.addOperator(">="_T);
-    lexer.addOperator("++"_T);
-    lexer.addOperator("--"_T);
-    lexer.addOperator("+="_T);
-    lexer.addOperator("-="_T);
-    lexer.addOperator("*="_T);
-    lexer.addOperator("/="_T);
-    lexer.addOperator("+"_T);
-    lexer.addOperator("-"_T);
-    lexer.addOperator("*"_T);
-    lexer.addOperator("/"_T);
-    lexer.addOperator("="_T);
-    lexer.addOperator("<"_T);
-    lexer.addOperator(">"_T);
-    lexer.addOperator("("_T);
-    lexer.addOperator(")"_T);
-    lexer.addOperator("_T"_T);
-    lexer.addOperator("{"_T);
-    lexer.addOperator("}"_T);
-    lexer.addOperator(";"_T);
+    lexer.addOperator("==");
+    lexer.addOperator("!=");
+    lexer.addOperator("<=");
+    lexer.addOperator(">=");
+    lexer.addOperator("++");
+    lexer.addOperator("--");
+    lexer.addOperator("+=");
+    lexer.addOperator("-=");
+    lexer.addOperator("*=");
+    lexer.addOperator("/=");
+    lexer.addOperator("+");
+    lexer.addOperator("-");
+    lexer.addOperator("*");
+    lexer.addOperator("/");
+    lexer.addOperator("=");
+    lexer.addOperator("<");
+    lexer.addOperator(">");
+    lexer.addOperator("(");
+    lexer.addOperator(")");
+    lexer.addOperator("");
+    lexer.addOperator("{");
+    lexer.addOperator("}");
+    lexer.addOperator(";");
 
     std::vector<Token> tokens = lexer.tokenize();
 

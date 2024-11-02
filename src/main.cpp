@@ -49,7 +49,7 @@ int main()
 
     for (const auto &token : tokens)
     {
-        std::cout << token.printToken() << std::endl;
+        std::cout << token.printToken().c_str() << std::endl;
     }
 
     return 0;

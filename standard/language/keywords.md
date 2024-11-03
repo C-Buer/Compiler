@@ -14,6 +14,12 @@
 
 ### Structs Define
 
+| Token | Description | Support |
+| --- | --- | --- |
+| struct | Similar to C struct | X |
+| class | C struct with public and private | X | 
+| interface | Interface to operate the class and struct | X |
+
 ### Symbols
 
 | Token | Description | Support |

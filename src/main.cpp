@@ -40,7 +40,7 @@ int main()
     lexer.addOperator(">");
     lexer.addOperator("(");
     lexer.addOperator(")");
-    lexer.addOperator("");
+    lexer.addOperator(".");
     lexer.addOperator("{");
     lexer.addOperator("}");
     lexer.addOperator(";");

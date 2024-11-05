@@ -1,0 +1,10 @@
+// test.cbuer
+int main() {
+    int x = 10;
+    float y = 20.5;
+    double z;
+    char c = 'A';
+    bool flag = true;
+    string message = "Hello, C Buer!";
+    return 0;
+}

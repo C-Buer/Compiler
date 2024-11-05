@@ -1,146 +1,65 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
-#include <TString.hpp>
-
-#include <algorithm>
+#include "Token.hpp"
+#include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
-
-enum class TokenType
-{
-    Identifier,
-    Keyword,
-    Number,
-    String,
-    Operator,
-    EndOfFile,
-    Unknown
-};
-
-struct Token
-{
-    TokenType type;
-    TString lexeme;
-    int line;
-    int column;
-    inline TString printToken() const;
-};
 
 class Lexer
 {
   public:
-    inline Lexer(const TString &source);
-
-    inline void addKeyword(const TString &keyword);
-
-    inline void addOperator(const TString &op);
-
+    Lexer(const std::string &source);
     std::vector<Token> tokenize();
 
   private:
-    TString source_;
-    size_t current_;
-    int line_;
-    int column_;
-    std::unordered_set<TString> keywords_;
-    std::vector<TString> operators_;
+    std::string source;
+    size_t current = 0;
+    int line = 1;
+    int column = 1;
+    std::vector<Token> tokens;
 
-    inline char peek() const;
-    inline char peekNext() const;
-    inline char advance();
-    inline bool isAtEnd() const;
-    inline void skipWhitespace();
-    inline Token makeToken(TokenType type, const TString &lexeme, int tokenLine, int tokenColumn);
+    std::unordered_map<std::string, TokenType> keywords = {{"auto", TokenType::Auto},
+                                                           {"struct", TokenType::Struct},
+                                                           {"class", TokenType::Class},
+                                                           {"union", TokenType::Union},
+                                                           {"enum", TokenType::Enum},
+                                                           {"if", TokenType::If},
+                                                           {"else", TokenType::Else},
+                                                           {"for", TokenType::For},
+                                                           {"while", TokenType::While},
+                                                           {"return", TokenType::Return},
+                                                           {"match", TokenType::Match},
+                                                           {"import", TokenType::Import},
+                                                           {"namespace", TokenType::Namespace},
+                                                           {"true", TokenType::True},
+                                                           {"false", TokenType::False},
+                                                           // Primitive Types
+                                                           {"int", TokenType::Int},
+                                                           {"float", TokenType::Float},
+                                                           {"double", TokenType::Double},
+                                                           {"char", TokenType::Char},
+                                                           {"bool", TokenType::Bool},
+                                                           {"void", TokenType::Void},
+                                                           {"long", TokenType::Long},
+                                                           {"short", TokenType::Short},
+                                                           {"signed", TokenType::Signed},
+                                                           {"unsigned", TokenType::Unsigned},
+                                                           {"wchar_t", TokenType::WChar_T}};
+
+    char peek();
+    char peekNext();
+    char advance();
+    bool match(char expected);
+    void addToken(TokenType type, const std::string &lexeme);
+    void skipWhitespace();
+    void skipComment();
     Token identifier();
     Token number();
-    Token stringLiteral();
-    Token op();
-
-    inline void sortOperators();
+    Token string();
+    Token character();
+    Token boolean();
 };
 
-TString Token::printToken() const
-{
-    static std::unordered_map<TokenType, TString> tokenTypeMap = {
-        {TokenType::Identifier, "Identifier"}, {TokenType::Keyword, "Keyword"},   {TokenType::Number, "Number"},
-        {TokenType::String, "String"},         {TokenType::Operator, "Operator"}, {TokenType::EndOfFile, "EndOfFile"},
-        {TokenType::Unknown, "Unknown"}};
-
-    return std::format("Type: {}, Lexeme: \"{}\", Line: {}, Column: {}\n", tokenTypeMap[type], lexeme, line, column);
-}
-
-Lexer::Lexer(const TString &source) : source_(source), current_(0), line_(1), column_(1)
-{
-}
-
-void Lexer::addKeyword(const TString &keyword)
-{
-    keywords_.insert(keyword);
-}
-
-void Lexer::addOperator(const TString &op)
-{
-    operators_.push_back(op);
-}
-
-void Lexer::sortOperators()
-{
-    std::ranges::sort(operators_, std::ranges::greater());
-}
-
-char Lexer::peek() const
-{
-    if (isAtEnd())
-        return '\0';
-    return source_[current_];
-}
-
-char Lexer::peekNext() const
-{
-    return source_[current_ + 1];
-}
-
-char Lexer::advance()
-{
-    char c = source_[current_++];
-    if (c == '\n')
-    {
-        line_++;
-        column_ = 1;
-    }
-    else
-    {
-        column_++;
-    }
-    return c;
-}
-
-bool Lexer::isAtEnd() const
-{
-    return current_ >= source_.size();
-}
-
-void Lexer::skipWhitespace()
-{
-    while (!isAtEnd())
-    {
-        char c = peek();
-        if (c == ' ' || c == '\r' || c == '\t' || c == '\n')
-        {
-            advance();
-        }
-        else
-        {
-            break;
-        }
-    }
-}
-
-Token Lexer::makeToken(TokenType type, const TString &lexeme, int tokenLine, int tokenColumn)
-{
-    return Token{type, lexeme, tokenLine, tokenColumn};
-}
-#endif
+#endif // LEXER_HPP

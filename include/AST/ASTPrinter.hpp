@@ -2,10 +2,14 @@
 #define AST_PRINTER_HPP
 
 #include "AST.hpp"
+#include <string>
 
-// ASTPrinter: A concrete visitor to print the AST
+// ASTPrinter: A concrete visitor to print the AST in Microsoft style with proper indentation
 struct ASTPrinter : ASTVisitor
 {
+    ASTPrinter();
+
+    // Override visit methods for each AST node type
     void visit(Program *node) override;
     void visit(VariableDeclaration *node) override;
     void visit(FunctionDeclaration *node) override;
@@ -14,7 +18,13 @@ struct ASTPrinter : ASTVisitor
     void visit(Literal *node) override;
     void visit(IdentifierExpr *node) override;
     void visit(BinaryExpr *node) override;
-    // Implement additional visit methods for other AST nodes as needed
+
+  private:
+    int indentLevel;          // Current indentation level
+    const int indentSize = 4; // Number of spaces per indentation level
+
+    // Helper function to print the current indentation
+    void printIndent();
 };
 
 #endif // AST_PRINTER_HPP

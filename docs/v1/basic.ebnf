@@ -16,13 +16,12 @@ Statement = VariableDeclaration
           | MatchStatement
           | ImportStatement
           | NamespaceDeclaration
-          ;
+          | AssignmentStatement
+;
 
 VariableDeclaration = Type , Identifier , [ "=" , Expression ] , ";" ;
 
-FunctionDeclaration = ("auto" | Type) , Identifier , "(" , [ ParameterList ] , ")" , Block
-                    | ("auto" | Type) , Identifier , "<" , TypeList , ">" , "(" , [ ParameterList ] , ")" , Block
-                    ;
+FunctionDeclaration = ("auto" | Type) , Identifier , "(" , [ ParameterList ] , ")" , Block | ("auto" | Type) , Identifier , "<" , TypeList , ">" , "(" , [ ParameterList ] , ")" , Block;
 
 StructDeclaration = "struct" , Identifier , "{" , { StructMember } , "}" , ";" ;
 
@@ -36,7 +35,7 @@ MatchStatement = "match" , "(" , Expression , ")" , "{" , { MatchCase } , "}" ;
 
 ExpressionStatement = Expression , ";" ;
 
-IfStatement = "if" , "(" , Expression , ")" , Block , [ "else" , ( Block | IfStatement ) ] ;
+IfStatement = "if" , "(" , [ VariableDeclaration | ExpressionStatement ] , Expression , ")" , Block , [ "else" , ( Block | IfStatement ) ] ;
 
 ForStatement = "for" , "(" , [ VariableDeclaration | ExpressionStatement ] , ";" , [ Expression ] , ";" , [ Expression ] , ")" , Block ;
 
@@ -48,15 +47,17 @@ ImportStatement = "import" , StringLiteral , ";" ;
 
 NamespaceDeclaration = "namespace" , Identifier , "{" , { Statement } , "}" ;
 
+AssignmentStatement = Identifier , "=" , Expression , ";" ;
+
 Type = QualifiedIdentifier | Identifier | PrimitiveType | CompositeType | PointerType | ReferenceType ;
 
 QualifiedIdentifier = Identifier , { "::" , Identifier } ;
 
-PrimitiveType = "int" | "float" | "double" | "char" | "bool" | "void" | "long" | "short" | "signed" | "unsigned" | "wchar_t" ;
+PrimitiveType = "int" | "float" | "double" | "char" | "bool" | "void" | "long" | "short" | "signed" | "unsigned" | "wchar\_t" ;
 
 CompositeType = "[" , TypeList , "]" ;
 
-PointerType = Type , "*" ;
+PointerType = Type , "\*" ;
 
 ReferenceType = Type , "&" ;
 
@@ -68,38 +69,23 @@ Parameter = Type , Identifier ;
 
 StructMember = VariableDeclaration
              | FunctionDeclaration
-             | "public:" 
-             | "private:" 
-             | "protected:" 
+             | "public:"
+             | "private:"
+             | "protected:"
              ;
 
 ClassMember = VariableDeclaration
-            | FunctionDeclaration
-            | ConstructorDeclaration
-            | DestructorDeclaration
-            | "public:" 
-            | "private:" 
-            | "protected:" 
-            ;
+             | FunctionDeclaration
+             | "public:"
+             | "private:"
+             | "protected:"
+             ;
 
-ConstructorDeclaration = Identifier , "(" , [ ParameterList ] , ")" , Block ;
-
-DestructorDeclaration = "~" , Identifier , "(" , ")" , Block ;
-
-UnionMember = VariableDeclaration
-            | "public:" 
-            | "private:" 
-            | "protected:" 
-            ;
+UnionMember = VariableDeclaration;
 
 EnumMember = Identifier , [ "{" , { VariableDeclaration } , "}" ] , [ "=" , IntegerLiteral ] , "," ;
 
-Literal = IntegerLiteral
-        | FloatingLiteral
-        | StringLiteral
-        | CharLiteral
-        | BooleanLiteral
-        ;
+Literal = IntegerLiteral | FloatingLiteral | StringLiteral | CharLiteral | BooleanLiteral;
 
 IntegerLiteral = DecimalLiteral | OctalLiteral | HexLiteral | BinaryLiteral ;
 
@@ -115,13 +101,13 @@ FloatingLiteral = Digit , { Digit } , "." , Digit , { Digit } , [ ExponentPart ]
 
 ExponentPart = ( "e" | "E" ) , [ "+" | "-" ] , Digit , { Digit } ;
 
-StringLiteral = "\"" , { StringCharacter } , "\"" ;
+StringLiteral = """ , { StringCharacter } , """ ;
 
 StringCharacter = AnyCharacterExceptDoubleQuote | EscapeSequence ;
 
 AnyCharacterExceptDoubleQuote = AnyCharacterExceptDoubleQuoteChar ;
 
-EscapeSequence = "\\" , ( "n" | "t" | "\\" | "\"" | "'" | "r" | "0" ) ;
+EscapeSequence = "\\" , ( "n" | "t" | "\\" | """ | "'" | "r" | "0" ) ;
 
 CharLiteral = "'" , ( AnyCharacterExceptSingleQuote | EscapeSequence ) , "'" ;
 
@@ -132,16 +118,16 @@ BooleanLiteral = "true" | "false" ;
 Identifier = ( Letter | "_" ) , { Letter | Digit | "_" } ;
 
 Letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" |
-         "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" |
-         "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" |
-         "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+"N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" |
+"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" |
+"n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
 
 Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 OctalDigit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" ;
 
 HexDigit = Digit | "A" | "B" | "C" | "D" | "E" | "F" |
-           "a" | "b" | "c" | "d" | "e" | "f" ;
+"a" | "b" | "c" | "d" | "e" | "f" ;
 
 BinaryDigit = "0" | "1" ;
 
@@ -161,18 +147,11 @@ RelationalExpression = AdditiveExpression , { ( "<" | ">" | "<=" | ">=" ) , Addi
 
 AdditiveExpression = MultiplicativeExpression , { ( "+" | "-" ) , MultiplicativeExpression } ;
 
-MultiplicativeExpression = UnaryExpression , { ( "*" | "/" ) , UnaryExpression } ;
+MultiplicativeExpression = UnaryExpression , { ( "\*" | "/" ) , UnaryExpression } ;
 
-UnaryExpression = [ ( "+" | "-" | "!" | "*" | "&" ) ] , PrimaryExpression ;
+UnaryExpression = [ ( "+" | "-" | "!" | "\*" | "&" ) ] , PrimaryExpression ;
 
-PrimaryExpression = Identifier
-                  | QualifiedIdentifier
-                  | Literal
-                  | "(" , Expression , ")"
-                  | CompositeLiteral
-                  | FunctionCall
-                  | MemberAccess
-                  ;
+PrimaryExpression = Identifier | QualifiedIdentifier | Literal | "(" , Expression , ")" | CompositeLiteral | FunctionCall | MemberAccess;
 
 CompositeLiteral = "{" , [ ExpressionList ] , "}" ;
 
@@ -184,8 +163,9 @@ ArgumentList = Expression , { "," , Expression } ;
 
 MemberAccess = ( Identifier | QualifiedIdentifier ) , ( "." | "->" ) , Identifier ;
 
-MatchCase = Label , ":" , Block ;
+MatchCase = ( IntegerLiteral | Label ) , ":" , Block ;
 
 Label = ( Identifier | QualifiedIdentifier ) ;
 
 Block = "{" , { Statement } , "}" ;
+

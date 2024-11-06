@@ -1,3 +1,4 @@
+// ASTPrinter.hpp
 #ifndef AST_PRINTER_HPP
 #define AST_PRINTER_HPP
 
@@ -15,6 +16,10 @@ struct ASTPrinter : ASTVisitor
     void visit(FunctionDeclaration *node) override;
     void visit(Block *node) override;
     void visit(ReturnStatement *node) override;
+    void visit(IfStatement *node) override;
+    void visit(ForStatement *node) override;
+    void visit(WhileStatement *node) override;
+    void visit(ExpressionStatement *node) override;
     void visit(Literal *node) override;
     void visit(IdentifierExpr *node) override;
     void visit(BinaryExpr *node) override;

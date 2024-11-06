@@ -29,7 +29,10 @@ class Parser
     std::unique_ptr<Statement> parseStatement();
     std::unique_ptr<VariableDeclaration> parseVariableDeclaration();
     std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration();
-    std::unique_ptr<ReturnStatement> parseReturnStatement(); // 声明 parseReturnStatement
+    std::unique_ptr<ReturnStatement> parseReturnStatement();
+    std::unique_ptr<IfStatement> parseIfStatement();       // Declared parseIfStatement
+    std::unique_ptr<ForStatement> parseForStatement();     // Declared parseForStatement
+    std::unique_ptr<WhileStatement> parseWhileStatement(); // Declared parseWhileStatement
     std::unique_ptr<Expression> parseExpression();
     std::unique_ptr<Expression> parseAssignment();
     std::unique_ptr<Expression> parseEquality();
@@ -39,6 +42,7 @@ class Parser
     std::unique_ptr<Expression> parseUnary();
     std::unique_ptr<Expression> parsePrimary();
     std::unique_ptr<Block> parseBlock();
+    std::unique_ptr<Statement> parseExpressionStatement(); // Added parseExpressionStatement
 
     // Helper function to check if a token is a type
     bool isType(TokenType type) const;

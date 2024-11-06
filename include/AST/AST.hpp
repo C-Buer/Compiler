@@ -13,6 +13,10 @@ struct VariableDeclaration;
 struct FunctionDeclaration;
 struct Block;
 struct ReturnStatement;
+struct IfStatement;
+struct ForStatement;
+struct WhileStatement;
+struct ExpressionStatement;
 struct Expression;
 struct Literal;
 struct IdentifierExpr;
@@ -28,6 +32,10 @@ struct ASTVisitor
     virtual void visit(FunctionDeclaration *node) = 0;
     virtual void visit(Block *node) = 0;
     virtual void visit(ReturnStatement *node) = 0;
+    virtual void visit(IfStatement *node) = 0;
+    virtual void visit(ForStatement *node) = 0;
+    virtual void visit(WhileStatement *node) = 0;
+    virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
@@ -132,6 +140,54 @@ struct ReturnStatement : Statement
     std::unique_ptr<Expression> value; // Optional
 
     ReturnStatement(std::unique_ptr<Expression> val = nullptr);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// If Statement Node
+struct IfStatement : Statement
+{
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Block> thenBranch;
+    std::unique_ptr<Statement> elseBranch; // Can be nullptr or another IfStatement
+
+    IfStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> thenB,
+                std::unique_ptr<Statement> elseB = nullptr);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// For Statement Node
+struct ForStatement : Statement
+{
+    std::unique_ptr<Statement> initializer; // VariableDeclaration or ExpressionStatement
+    std::unique_ptr<Expression> condition;  // Optional
+    std::unique_ptr<Expression> increment;  // Optional
+    std::unique_ptr<Block> body;
+
+    ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> cond, std::unique_ptr<Expression> inc,
+                 std::unique_ptr<Block> b);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// While Statement Node
+struct WhileStatement : Statement
+{
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Block> body;
+
+    WhileStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> b);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// Expression Statement Node
+struct ExpressionStatement : Statement
+{
+    std::unique_ptr<Expression> expression;
+
+    ExpressionStatement(std::unique_ptr<Expression> expr);
 
     void accept(ASTVisitor *visitor) override;
 };

@@ -77,6 +77,51 @@ void ReturnStatement::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// IfStatement Implementations
+IfStatement::IfStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> thenB,
+                         std::unique_ptr<Statement> elseB)
+    : condition(std::move(cond)), thenBranch(std::move(thenB)), elseBranch(std::move(elseB))
+{
+}
+
+void IfStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// ForStatement Implementations
+ForStatement::ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> cond,
+                           std::unique_ptr<Expression> inc, std::unique_ptr<Block> b)
+    : initializer(std::move(init)), condition(std::move(cond)), increment(std::move(inc)), body(std::move(b))
+{
+}
+
+void ForStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// WhileStatement Implementations
+WhileStatement::WhileStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> b)
+    : condition(std::move(cond)), body(std::move(b))
+{
+}
+
+void WhileStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// ExpressionStatement Implementations
+ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : expression(std::move(expr))
+{
+}
+
+void ExpressionStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // Program Implementations
 void Program::accept(ASTVisitor *visitor)
 {

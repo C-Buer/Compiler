@@ -95,18 +95,15 @@ std::unique_ptr<Statement> Parser::parseStatement()
 {
     if (match(TokenType::If))
     {
-        // Implement parseIfStatement()
-        // TODO: Add IfStatement parsing
+        return parseIfStatement();
     }
     if (match(TokenType::For))
     {
-        // Implement parseForStatement()
-        // TODO: Add ForStatement parsing
+        return parseForStatement();
     }
     if (match(TokenType::While))
     {
-        // Implement parseWhileStatement()
-        // TODO: Add WhileStatement parsing
+        return parseWhileStatement();
     }
     if (match(TokenType::Return))
     {
@@ -490,4 +487,212 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
     }
 
     return returnStmt;
+}
+
+// Implement parseIfStatement
+std::unique_ptr<IfStatement> Parser::parseIfStatement()
+{
+    // Parse '('
+    if (!match(TokenType::LeftParen))
+    {
+        error("Expected '(' after 'if'", peekToken());
+        return nullptr;
+    }
+
+    // Parse condition
+    auto condition = parseExpression();
+    if (!condition)
+    {
+        error("Expected condition expression in 'if' statement", peekToken());
+        return nullptr;
+    }
+
+    // Parse ')'
+    if (!match(TokenType::RightParen))
+    {
+        error("Expected ')' after condition in 'if' statement", peekToken());
+        return nullptr;
+    }
+
+    // Parse thenBranch (must be a Block)
+    if (!match(TokenType::LeftBrace))
+    {
+        error("Expected '{' to start 'then' block in 'if' statement", peekToken());
+        return nullptr;
+    }
+
+    auto thenBranch = parseBlock();
+    if (!thenBranch)
+    {
+        error("Expected 'then' block in 'if' statement", peekToken());
+        return nullptr;
+    }
+
+    // Parse optional elseBranch
+    std::unique_ptr<Statement> elseBranch = nullptr;
+    if (match(TokenType::Else))
+    {
+        if (match(TokenType::If))
+        {
+            elseBranch = parseIfStatement();
+        }
+        else
+        {
+            if (!match(TokenType::LeftBrace))
+            {
+                error("Expected '{' to start 'else' block in 'if' statement", peekToken());
+                return nullptr;
+            }
+            elseBranch = parseBlock();
+            if (!elseBranch)
+            {
+                error("Expected 'else' block in 'if' statement", peekToken());
+                return nullptr;
+            }
+        }
+    }
+
+    return std::make_unique<IfStatement>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+// Implement parseForStatement
+std::unique_ptr<ForStatement> Parser::parseForStatement()
+{
+    // Parse '('
+    if (!match(TokenType::LeftParen))
+    {
+        error("Expected '(' after 'for'", peekToken());
+        return nullptr;
+    }
+
+    // Parse initializer
+    std::unique_ptr<Statement> initializer = nullptr;
+    if (!match(TokenType::Semicolon))
+    {
+        if (isType(peekToken().type))
+        {
+            initializer = parseVariableDeclaration();
+        }
+        else
+        {
+            initializer = parseExpressionStatement();
+        }
+
+        if (!match(TokenType::Semicolon))
+        {
+            error("Expected ';' after initializer in 'for' statement", peekToken());
+            return nullptr;
+        }
+    }
+
+    // Parse condition
+    std::unique_ptr<Expression> condition = nullptr;
+    if (!match(TokenType::Semicolon))
+    {
+        condition = parseExpression();
+        if (!condition)
+        {
+            error("Expected condition expression in 'for' statement", peekToken());
+            return nullptr;
+        }
+
+        if (!match(TokenType::Semicolon))
+        {
+            error("Expected ';' after condition in 'for' statement", peekToken());
+            return nullptr;
+        }
+    }
+
+    // Parse increment
+    std::unique_ptr<Expression> increment = nullptr;
+    if (!check(TokenType::RightParen))
+    {
+        increment = parseExpression();
+    }
+
+    // Parse ')'
+    if (!match(TokenType::RightParen))
+    {
+        error("Expected ')' after for clauses", peekToken());
+        return nullptr;
+    }
+
+    // Parse body (must be a Block)
+    if (!match(TokenType::LeftBrace))
+    {
+        error("Expected '{' to start 'for' loop body", peekToken());
+        return nullptr;
+    }
+
+    auto body = parseBlock();
+    if (!body)
+    {
+        error("Expected loop body in 'for' statement", peekToken());
+        return nullptr;
+    }
+
+    return std::make_unique<ForStatement>(std::move(initializer), std::move(condition), std::move(increment),
+                                          std::move(body));
+}
+
+// Implement parseWhileStatement
+std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
+{
+    // Parse '('
+    if (!match(TokenType::LeftParen))
+    {
+        error("Expected '(' after 'while'", peekToken());
+        return nullptr;
+    }
+
+    // Parse condition
+    auto condition = parseExpression();
+    if (!condition)
+    {
+        error("Expected condition expression in 'while' statement", peekToken());
+        return nullptr;
+    }
+
+    // Parse ')'
+    if (!match(TokenType::RightParen))
+    {
+        error("Expected ')' after condition in 'while' statement", peekToken());
+        return nullptr;
+    }
+
+    // Parse body (must be a Block)
+    if (!match(TokenType::LeftBrace))
+    {
+        error("Expected '{' to start 'while' loop body", peekToken());
+        return nullptr;
+    }
+
+    auto body = parseBlock();
+    if (!body)
+    {
+        error("Expected loop body in 'while' statement", peekToken());
+        return nullptr;
+    }
+
+    return std::make_unique<WhileStatement>(std::move(condition), std::move(body));
+}
+
+// Implement parseExpressionStatement
+std::unique_ptr<Statement> Parser::parseExpressionStatement()
+{
+    auto expr = parseExpression();
+    if (!expr)
+    {
+        error("Expected expression in statement", peekToken());
+        return nullptr;
+    }
+
+    if (!match(TokenType::Semicolon))
+    {
+        error("Expected ';' after expression statement", peekToken());
+        return nullptr;
+    }
+
+    // Create an ExpressionStatement node
+    return std::make_unique<ExpressionStatement>(std::move(expr));
 }

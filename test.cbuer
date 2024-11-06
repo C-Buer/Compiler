@@ -1,11 +1,25 @@
 // test.cbuer
-int main() 
-{
+int main() {
     int x = 10;
     float y = 20.5;
     double z;
     char c = 'A';
     bool flag = true;
     string message = "Hello, C Buer!";
+    
+    if (x > 5) {
+        y = y + 1.5;
+    } else {
+        y = y - 1.5;
+    }
+    
+    for (int i = 0; i < x; i = i + 1) {
+        z = z + i;
+    }
+    
+    while (z < 100) {
+        z = z * 2;
+    }
+    
     return 0;
 }

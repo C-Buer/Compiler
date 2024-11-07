@@ -221,8 +221,8 @@ void ASTPrinter::visit(BinaryExpr *node)
     std::cout << ")";
 }
 
-// Visit method for the FnCallExpr node
-void ASTPrinter::visit(FnCallExpr *node)
+// Visit method for the FunctionCallExpr node
+void ASTPrinter::visit(FunctionCallExpr *node)
 {
     std::cout << node->name << "(";
     for (auto it = node->parameters.begin(); it != node->parameters.end(); it++)

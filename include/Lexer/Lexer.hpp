@@ -35,14 +35,14 @@ class Lexer
                                                            {"true", TokenType::True},
                                                            {"false", TokenType::False},
                                                            // Primitive Types
-                                                           {"int", TokenType::Int},
                                                            {"float", TokenType::Float},
                                                            {"double", TokenType::Double},
                                                            {"char", TokenType::Char},
                                                            {"bool", TokenType::Bool},
                                                            {"void", TokenType::Void},
-                                                           {"long", TokenType::Long},
-                                                           {"short", TokenType::Short},
+                                                           {"int64", TokenType::Int64},
+                                                           {"int32", TokenType::Int32},
+                                                           {"int16", TokenType::Int16},
                                                            {"signed", TokenType::Signed},
                                                            {"unsigned", TokenType::Unsigned}};
 

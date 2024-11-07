@@ -21,7 +21,7 @@ struct Literal;
 struct IdentifierExpr;
 struct AssignmentExpr;
 struct BinaryExpr;
-struct FnCallExpr;
+struct FunctionCallExpr;
 
 // Visitor Interface
 struct ASTVisitor
@@ -41,7 +41,7 @@ struct ASTVisitor
     virtual void visit(IdentifierExpr *node) = 0;
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
-    virtual void visit(FnCallExpr *node) = 0;
+    virtual void visit(FunctionCallExpr *node) = 0;
     // Add more visit methods for additional AST nodes as needed
 };
 
@@ -97,12 +97,12 @@ struct BinaryExpr : Expression
     void accept(ASTVisitor *visitor) override;
 };
 
-struct FnCallExpr : Expression
+struct FunctionCallExpr : Expression
 {
     std::string name;
     std::vector<std::unique_ptr<Expression>> parameters;
 
-    FnCallExpr(const std::string &name, std::vector<std::unique_ptr<Expression>> &params);
+    FunctionCallExpr(const std::string &name, std::vector<std::unique_ptr<Expression>> &params);
 
     void accept(ASTVisitor *visitor) override;
 };

@@ -66,14 +66,14 @@ enum class TokenType
     False = 51,
 
     // Primitive Types
-    Int = 52,
+    Int32 = 52,
     Float = 53,
     Double = 54,
     Char = 55,
     Bool = 56,
     Void = 57,
-    Long = 58,
-    Short = 59,
+    Int64 = 58,
+    Int16 = 59,
     Signed = 60,
     Unsigned = 61,
     WChar_T = 62,

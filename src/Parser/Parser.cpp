@@ -11,14 +11,14 @@ bool Parser::isBaseType(TokenType type) const
 {
     switch (type)
     {
-    case TokenType::Int:
     case TokenType::Float:
     case TokenType::Double:
     case TokenType::Char:
     case TokenType::Bool:
     case TokenType::Void:
-    case TokenType::Long:
-    case TokenType::Short:
+    case TokenType::Int64:
+    case TokenType::Int32:
+    case TokenType::Int16:
     case TokenType::Signed:
     case TokenType::Unsigned:
         return true;
@@ -486,7 +486,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
                 }
                 parameters.push_back(std::move(expr));
             }
-            return std::make_unique<FnCallExpr>(name, parameters);
+            return std::make_unique<FunctionCallExpr>(name, parameters);
         }
         else
         {

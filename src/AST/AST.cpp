@@ -43,7 +43,7 @@ void BinaryExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-FnCallExpr::FnCallExpr(const std::string &n, std::vector<std::unique_ptr<Expression>> &params) : name(n)
+FunctionCallExpr::FunctionCallExpr(const std::string &n, std::vector<std::unique_ptr<Expression>> &params) : name(n)
 {
     parameters.reserve(params.size());
     for (auto &tmp : params)
@@ -52,7 +52,7 @@ FnCallExpr::FnCallExpr(const std::string &n, std::vector<std::unique_ptr<Express
     }
 }
 
-void FnCallExpr::accept(ASTVisitor *visitor)
+void FunctionCallExpr::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }

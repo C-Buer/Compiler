@@ -2,10 +2,10 @@
 #include "AST\ASTPrinter.hpp"
 #include "Lexer\Lexer.hpp"
 #include "Parser\Parser.hpp"
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <memory>
-
 
 int main(int argc, char *argv[])
 {
@@ -36,14 +36,20 @@ int main(int argc, char *argv[])
     }
     */
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     Parser parser(tokens);
     std::unique_ptr<Program> program = parser.parse();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
     // AST Printing
     ASTPrinter printer;
     program->accept(&printer);
 
     std::cout << "Parsing completed successfully.\n";
+    std::cout << "Parse time: " << duration.count() << " us\n";
 
     return 0;
 }

@@ -1,8 +1,8 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include "AST\AST.hpp"
-#include "Lexer\Lexer.hpp"
+#include "AST/AST.hpp"
+#include "Lexer/Lexer.hpp"
 #include <memory>
 #include <vector>
 

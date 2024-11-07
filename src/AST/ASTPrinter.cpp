@@ -1,5 +1,5 @@
 // ASTPrinter.cpp
-#include "AST\ASTPrinter.hpp"
+#include "AST/ASTPrinter.hpp"
 #include <iostream>
 
 // Constructor initializes the indentation level to zero
@@ -234,7 +234,7 @@ void ASTPrinter::visit(FnCallExpr *node)
         else
         {
             (**it).accept(this);
-            std::cout << ",";
+            std::cout << ", ";
         }
     }
     std::cout << ")";

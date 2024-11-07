@@ -1,7 +1,7 @@
-#include "AST\AST.hpp"
-#include "AST\ASTPrinter.hpp"
-#include "Lexer\Lexer.hpp"
-#include "Parser\Parser.hpp"
+#include "AST/AST.hpp"
+#include "AST/ASTPrinter.hpp"
+#include "Lexer/Lexer.hpp"
+#include "Parser/Parser.hpp"
 #include <chrono>
 #include <fstream>
 #include <iostream>

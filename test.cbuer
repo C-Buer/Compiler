@@ -1,5 +1,5 @@
 // test.cbuer
-int main() {
+int main(int argc, char argv) {
     int x = 10;
     float y = 20.5;
     double z;
@@ -20,6 +20,6 @@ int main() {
     while (z < 100) {
         z = z * 2;
     }
-    main();
+    main(x, c);
     return 0;
 }

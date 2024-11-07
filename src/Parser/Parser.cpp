@@ -1,8 +1,9 @@
-#include "Parser\Parser.hpp"
+#include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
 // Helper function to determine if a token is a base type
@@ -483,6 +484,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
                     error("Expected expression after function call", peekToken());
                     return nullptr;
                 }
+                parameters.push_back(std::move(expr));
             }
             return std::make_unique<FnCallExpr>(name, parameters);
         }

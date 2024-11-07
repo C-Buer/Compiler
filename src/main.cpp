@@ -36,20 +36,20 @@ int main(int argc, char *argv[])
     }
     */
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto startParser = std::chrono::high_resolution_clock::now();
 
     Parser parser(tokens);
     std::unique_ptr<Program> program = parser.parse();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    auto endParser = std::chrono::high_resolution_clock::now();
+    auto durationParser = std::chrono::duration_cast<std::chrono::microseconds>(endParser - startParser);
 
     // AST Printing
     ASTPrinter printer;
     program->accept(&printer);
 
     std::cout << "Parsing completed successfully.\n";
-    std::cout << "Parse time: " << duration.count() << " us\n";
+    std::cout << "Parse time: " << durationParser.count() << " us\n";
 
     return 0;
 }

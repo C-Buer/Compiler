@@ -594,12 +594,6 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
         {
             initializer = parseExpressionStatement();
         }
-
-        if (!match(TokenType::Semicolon))
-        {
-            error("Expected ';' after initializer in 'for' statement", peekToken());
-            return nullptr;
-        }
     }
 
     // Parse condition

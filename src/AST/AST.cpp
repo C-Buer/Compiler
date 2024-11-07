@@ -1,4 +1,5 @@
 #include "AST\AST.hpp"
+#include <utility>
 
 // Literal Implementations
 Literal::Literal(const std::string &val) : value(val)
@@ -38,6 +39,20 @@ BinaryExpr::BinaryExpr(const std::string &oper, std::unique_ptr<Expression> l, s
 }
 
 void BinaryExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+FnCallExpr::FnCallExpr(const std::string &n, std::vector<std::unique_ptr<Expression>> &params) : name(n)
+{
+    parameters.reserve(params.size());
+    for (auto &tmp : params)
+    {
+        parameters.push_back(std::move(tmp));
+    }
+}
+
+void FnCallExpr::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }

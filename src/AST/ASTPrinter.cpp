@@ -208,6 +208,7 @@ void ASTPrinter::visit(AssignmentExpr *node)
 // Visit method for the BinaryExpr node
 void ASTPrinter::visit(BinaryExpr *node)
 {
+    std::cout << "(";
     if (node->left)
     {
         node->left->accept(this);
@@ -217,4 +218,24 @@ void ASTPrinter::visit(BinaryExpr *node)
     {
         node->right->accept(this);
     }
+    std::cout << ")";
+}
+
+// Visit method for the FnCallExpr node
+void ASTPrinter::visit(FnCallExpr *node)
+{
+    std::cout << node->name << "(";
+    for (auto it = node->parameters.begin(); it != node->parameters.end(); it++)
+    {
+        if (it + 1 == node->parameters.end())
+        {
+            (**it).accept(this);
+        }
+        else
+        {
+            (**it).accept(this);
+            std::cout << ",";
+        }
+    }
+    std::cout << ")";
 }

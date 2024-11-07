@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 class Lexer
 {
   public:
@@ -45,8 +44,7 @@ class Lexer
                                                            {"long", TokenType::Long},
                                                            {"short", TokenType::Short},
                                                            {"signed", TokenType::Signed},
-                                                           {"unsigned", TokenType::Unsigned},
-                                                           {"wchar_t", TokenType::WChar_T}};
+                                                           {"unsigned", TokenType::Unsigned}};
 
     char peek();
     char peekNext();

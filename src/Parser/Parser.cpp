@@ -3,6 +3,7 @@
 #include "Lexer/Token.hpp"
 #include <iostream>
 #include <memory>
+#include <vector>
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -19,7 +20,6 @@ bool Parser::isBaseType(TokenType type) const
     case TokenType::Short:
     case TokenType::Signed:
     case TokenType::Unsigned:
-    case TokenType::WChar_T:
         return true;
     default:
         return false;
@@ -466,7 +466,30 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     }
     if (match(TokenType::Identifier))
     {
-        return std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        auto name = previousToken().lexeme;
+        if (match(TokenType::LeftParen))
+        {
+            std::vector<std::unique_ptr<Expression>> parameters;
+            for (bool isBegin = true; !match(TokenType::RightParen); isBegin = false)
+            {
+                if (!match(TokenType::Comma) && !isBegin)
+                {
+                    error("Expected expression after parameters", peekToken());
+                    return nullptr;
+                }
+                auto expr = parseExpression();
+                if (!expr)
+                {
+                    error("Expected expression after function call", peekToken());
+                    return nullptr;
+                }
+            }
+            return std::make_unique<FnCallExpr>(name, parameters);
+        }
+        else
+        {
+            return std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        }
     }
     if (match(TokenType::LeftParen))
     {

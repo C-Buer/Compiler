@@ -8,7 +8,7 @@ int main() {
     string message = "Hello, C Buer!";
     
     if (x > 5) {
-        y = y + 1.5;
+        y = (y + 1.5) + y;
     } else {
         y = y - 1.5;
     }
@@ -20,6 +20,6 @@ int main() {
     while (z < 100) {
         z = z * 2;
     }
-    
+    main();
     return 0;
 }

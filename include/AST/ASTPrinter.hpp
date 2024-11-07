@@ -24,6 +24,7 @@ struct ASTPrinter : ASTVisitor
     void visit(IdentifierExpr *node) override;
     void visit(AssignmentExpr *node) override;
     void visit(BinaryExpr *node) override;
+    void visit(FnCallExpr *node) override;
 
   private:
     int indentLevel;          // Current indentation level

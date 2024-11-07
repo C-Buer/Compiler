@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-
 // Forward declarations for Visitor
 struct Program;
 struct VariableDeclaration;
@@ -20,6 +19,7 @@ struct ExpressionStatement;
 struct Expression;
 struct Literal;
 struct IdentifierExpr;
+struct AssignmentExpr;
 struct BinaryExpr;
 
 // Visitor Interface
@@ -38,6 +38,7 @@ struct ASTVisitor
     virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;
+    virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
     // Add more visit methods for additional AST nodes as needed
 };
@@ -69,6 +70,16 @@ struct IdentifierExpr : Expression
     std::string name;
 
     IdentifierExpr(const std::string &n);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct AssignmentExpr : Expression
+{
+    std::unique_ptr<Expression> left;
+    std::unique_ptr<Expression> right;
+
+    AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r);
 
     void accept(ASTVisitor *visitor) override;
 };

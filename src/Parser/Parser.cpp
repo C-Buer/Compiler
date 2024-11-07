@@ -1,8 +1,11 @@
 #include "Parser\Parser.hpp"
+#include "AST/AST.hpp"
+#include "Lexer/Token.hpp"
 #include <iostream>
+#include <memory>
 
-// Helper function to determine if a token is a type
-bool Parser::isType(TokenType type) const
+// Helper function to determine if a token is a base type
+bool Parser::isBaseType(TokenType type) const
 {
     switch (type)
     {
@@ -17,11 +20,21 @@ bool Parser::isType(TokenType type) const
     case TokenType::Signed:
     case TokenType::Unsigned:
     case TokenType::WChar_T:
-    case TokenType::Identifier: // User-defined types
         return true;
     default:
         return false;
     }
+}
+
+// Helper function to determine if a token is a type
+bool Parser::isType(TokenType type) const
+{
+    return isBaseType(type) || type == TokenType::Identifier;
+}
+
+bool Parser::isValid(TokenType type) const
+{
+    return type != TokenType::Invalid;
 }
 
 Parser::Parser(const std::vector<Token> &tokens) : tokens(tokens)
@@ -134,12 +147,17 @@ std::unique_ptr<Statement> Parser::parseStatement()
                 return parseVariableDeclaration();
             }
         }
+        else
+        {
+            current = save;
+            return parseExpressionStatement();
+        }
+    }
+    else
+    {
+        return parseExpressionStatement();
     }
 
-    // Handle other statement types
-    // ...
-
-    // If no known statement is matched
     error("Unknown statement", peekToken());
     return nullptr;
 }
@@ -326,9 +344,8 @@ std::unique_ptr<Expression> Parser::parseAssignment()
         // For simplicity, handle only identifier = expression
         if (auto idExpr = dynamic_cast<IdentifierExpr *>(expr.get()))
         {
-            // Normally, you'd construct an assignment expression node
-            // Here, we'll just return the value
-            return value;
+            auto asExpr = std::make_unique<AssignmentExpr>(std::move(expr), std::move(value));
+            return asExpr;
         }
         else
         {

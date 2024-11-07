@@ -197,6 +197,14 @@ void ASTPrinter::visit(IdentifierExpr *node)
     std::cout << node->name;
 }
 
+// Visit method for the AssignmentExpr node
+void ASTPrinter::visit(AssignmentExpr *node)
+{
+    node->left->accept(this);
+    std::cout << " = ";
+    node->right->accept(this);
+}
+
 // Visit method for the BinaryExpr node
 void ASTPrinter::visit(BinaryExpr *node)
 {

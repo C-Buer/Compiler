@@ -16,8 +16,7 @@ Statement = VariableDeclaration
           | MatchStatement
           | ImportStatement
           | NamespaceDeclaration
-          | AssignmentStatement
-;
+          ;
 
 VariableDeclaration = Type , Identifier , [ "=" , Expression ] , ";" ;
 
@@ -46,8 +45,6 @@ ReturnStatement = "return" , [ Expression ] , ";" ;
 ImportStatement = "import" , StringLiteral , ";" ;
 
 NamespaceDeclaration = "namespace" , Identifier , "{" , { Statement } , "}" ;
-
-AssignmentStatement = Identifier , "=" , Expression , ";" ;
 
 Type = QualifiedIdentifier | Identifier | PrimitiveType | CompositeType | PointerType | ReferenceType ;
 

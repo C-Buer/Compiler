@@ -20,6 +20,17 @@ void IdentifierExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// AssignmentExpr Implementations
+AssignmentExpr::AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
+    : left(std::move(l)), right(std::move(r))
+{
+}
+
+void AssignmentExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // BinaryExpr Implementations
 BinaryExpr::BinaryExpr(const std::string &oper, std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
     : op(oper), left(std::move(l)), right(std::move(r))

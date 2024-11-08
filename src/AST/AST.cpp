@@ -2,7 +2,7 @@
 #include <utility>
 
 // Literal Implementations
-Literal::Literal(const std::string &val) : value(val)
+Literal::Literal(const std::variant<int64_t, double, std::string, char, bool> &val) : value(val)
 {
 }
 

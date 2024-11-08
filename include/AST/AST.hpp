@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 // Forward declarations for Visitor
@@ -60,9 +61,9 @@ struct Expression : ASTNode
 
 struct Literal : Expression
 {
-    std::string value;
+    std::variant<int64_t, double, std::string, char, bool> value;
 
-    Literal(const std::string &val);
+    Literal(const std::variant<int64_t, double, std::string, char, bool> &val);
 
     void accept(ASTVisitor *visitor) override;
 };

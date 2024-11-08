@@ -1,6 +1,8 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
+#include <cctype>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -447,11 +449,29 @@ std::unique_ptr<Expression> Parser::parsePrimary()
 {
     if (match(TokenType::IntegerLiteral))
     {
-        return std::make_unique<Literal>(previousToken().lexeme);
+        auto number = previousToken().lexeme;
+        if (number[0] != '0' || number.size() == 1)
+        {
+            return std::make_unique<Literal>(std::stoll(number));
+        }
+        auto head = number[1];
+        if (std::isdigit(head))
+        {
+            return std::make_unique<Literal>(std::stoll(number.substr(1), nullptr, 8));
+        }
+        number = number.substr(2);
+        if (head == 'B' || head == 'b')
+        {
+            return std::make_unique<Literal>(std::stoll(number, nullptr, 2));
+        }
+        if (head == 'X' || head == 'x')
+        {
+            return std::make_unique<Literal>(std::stoll(number, nullptr, 16));
+        }
     }
     if (match(TokenType::FloatingLiteral))
     {
-        return std::make_unique<Literal>(previousToken().lexeme);
+        return std::make_unique<Literal>(std::stod(previousToken().lexeme));
     }
     if (match(TokenType::StringLiteral))
     {
@@ -459,11 +479,11 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     }
     if (match(TokenType::CharLiteral))
     {
-        return std::make_unique<Literal>(previousToken().lexeme);
+        return std::make_unique<Literal>(previousToken().lexeme[0]);
     }
     if (match(TokenType::BooleanLiteral))
     {
-        return std::make_unique<Literal>(previousToken().lexeme);
+        return std::make_unique<Literal>(previousToken().lexeme == "true");
     }
     if (match(TokenType::Identifier))
     {

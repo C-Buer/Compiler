@@ -1,5 +1,6 @@
 // ASTPrinter.cpp
 #include "AST/ASTPrinter.hpp"
+#include <cstdint>
 #include <iostream>
 
 // Constructor initializes the indentation level to zero
@@ -188,7 +189,26 @@ void ASTPrinter::visit(ExpressionStatement *node)
 // Visit method for the Literal node
 void ASTPrinter::visit(Literal *node)
 {
-    std::cout << node->value;
+    switch (node->value.index())
+    {
+    case 0:
+        std::cout << std::get<int64_t>(node->value);
+        break;
+    case 1:
+        std::cout << std::get<double>(node->value);
+        break;
+    case 2:
+        std::cout << "\"" << std::get<std::string>(node->value) << "\"";
+        break;
+    case 3:
+        std::cout << "'" << std::get<char>(node->value) << "'";
+        break;
+    case 4:
+        std::cout << std::get<bool>(node->value);
+        break;
+    default:
+        break;
+    }
 }
 
 // Visit method for the IdentifierExpr node

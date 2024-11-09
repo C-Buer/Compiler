@@ -430,7 +430,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
 
 std::unique_ptr<Expression> Parser::parseUnary()
 {
-    if (match(TokenType::Exclamation) || match(TokenType::Minus) || match(TokenType::Plus))
+    if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
     {
         Token oper = previousToken();
         auto right = parseUnary();
@@ -508,10 +508,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
             }
             return std::make_unique<FunctionCallExpr>(name, parameters);
         }
-        else
-        {
-            return std::make_unique<IdentifierExpr>(previousToken().lexeme);
-        }
+        return std::make_unique<IdentifierExpr>(name);
     }
     if (match(TokenType::LeftParen))
     {

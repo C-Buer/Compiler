@@ -56,9 +56,14 @@ std::vector<Token> Lexer::tokenize()
             break;
         case '.':
             if (peekNext() == '.')
-            { // Handle ellipsis or range if needed
-                addToken(TokenType::Dot, "..");
+            {
                 advance();
+                if (peekNext() == '.')
+                {
+                    addToken(TokenType::Ellipsis, "...");
+                    advance();
+                }
+                addToken(TokenType::Dot, "..");
                 advance();
             }
             else
@@ -74,7 +79,7 @@ std::vector<Token> Lexer::tokenize()
         case ':':
             if (peekNext() == ':')
             {
-                addToken(TokenType::Colon, "::");
+                addToken(TokenType::Scope, "::");
                 advance();
                 advance();
             }
@@ -85,13 +90,28 @@ std::vector<Token> Lexer::tokenize()
             }
             break;
         case '+':
-            addToken(TokenType::Plus, "+");
-            advance();
+            if (peekNext() == '+')
+            {
+                addToken(TokenType::Increment, "++");
+                advance();
+                advance();
+            }
+            else
+            {
+                addToken(TokenType::Plus, "+");
+                advance();
+            }
             break;
         case '-':
             if (peekNext() == '>')
             {
                 addToken(TokenType::Arrow, "->");
+                advance();
+                advance();
+            }
+            else if (peekNext() == '-')
+            {
+                addToken(TokenType::Decrement, "--");
                 advance();
                 advance();
             }

@@ -8,12 +8,12 @@ int main(int argc, char argv) {
     string message = "Hello, C Buer!";
     
     if (x > 5) {
-        y = y + (1.5 + y);
+        y = y + 1.5 + y * 5;
     } else {
         y = y - 1.5;
     }
     
-    for (int64 i = 0; i < x; i = i + 1) {
+    for (int64 i = 0; i < x; ++i) {
         z = z + i;
     }
     

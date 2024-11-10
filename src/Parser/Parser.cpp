@@ -1,8 +1,6 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
-#include <iostream>
-#include <utility>
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -17,8 +15,11 @@ bool Parser::isBaseType(TokenType type) const
     case TokenType::Int64:
     case TokenType::Int32:
     case TokenType::Int16:
-    case TokenType::Signed:
-    case TokenType::Unsigned:
+    case TokenType::Int8:
+    case TokenType::UInt64:
+    case TokenType::UInt32:
+    case TokenType::UInt16:
+    case TokenType::UInt8:
         return true;
     default:
         return false;
@@ -29,11 +30,6 @@ bool Parser::isBaseType(TokenType type) const
 bool Parser::isType(TokenType type) const
 {
     return isBaseType(type) || type == TokenType::Identifier;
-}
-
-bool Parser::isValid(TokenType type) const
-{
-    return type != TokenType::Invalid;
 }
 
 Parser::Parser(const std::vector<Token> &tokens) : tokens(tokens)

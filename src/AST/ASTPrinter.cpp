@@ -1,8 +1,6 @@
 // ASTPrinter.cpp
 #include "AST/ASTPrinter.hpp"
 #include "AST/AST.hpp"
-#include <cstdint>
-#include <iostream>
 
 // Constructor initializes the indentation level to zero
 ASTPrinter::ASTPrinter() : indentLevel(0)

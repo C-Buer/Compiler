@@ -55,7 +55,6 @@ class Parser
     // Helper function to check if a token is a type
     bool isBaseType(TokenType type) const;
     bool isType(TokenType type) const;
-    bool isValid(TokenType type) const;
 };
 
 #endif // PARSER_HPP

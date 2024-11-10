@@ -82,8 +82,11 @@ enum class TokenType
     Int64,
     Int32,
     Int16,
-    Signed,
-    Unsigned,
+    Int8,
+    UInt64,
+    UInt32,
+    UInt16,
+    UInt8,
 
     // End of file
     EndOfFile,

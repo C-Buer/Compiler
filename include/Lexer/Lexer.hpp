@@ -2,6 +2,7 @@
 #define LEXER_HPP
 
 #include "Token.hpp"
+#include <iostream>
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -45,8 +46,11 @@ class Lexer
                                                            {"int64", TokenType::Int64},
                                                            {"int32", TokenType::Int32},
                                                            {"int16", TokenType::Int16},
-                                                           {"signed", TokenType::Signed},
-                                                           {"unsigned", TokenType::Unsigned}};
+                                                           {"int8", TokenType::Int8},
+                                                           {"uint64", TokenType::UInt64},
+                                                           {"uint32", TokenType::UInt32},
+                                                           {"uint16", TokenType::UInt16},
+                                                           {"uint8", TokenType::UInt8}};
 
     char peek();
     char peekNext();

@@ -1,8 +1,5 @@
 #include "Lexer/Lexer.hpp"
 #include "Lexer/Token.hpp"
-#include <cctype>
-#include <iostream>
-#include <vector>
 
 Lexer::Lexer(const std::string &source) : source(source)
 {

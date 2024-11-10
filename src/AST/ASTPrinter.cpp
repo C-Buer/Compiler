@@ -1,5 +1,6 @@
 // ASTPrinter.cpp
 #include "AST/ASTPrinter.hpp"
+#include "AST/AST.hpp"
 #include <cstdint>
 #include <iostream>
 
@@ -211,6 +212,14 @@ void ASTPrinter::visit(Literal *node)
 void ASTPrinter::visit(IdentifierExpr *node)
 {
     std::cout << node->name;
+}
+
+// Visit method for the NamespaceExpr node
+void ASTPrinter::visit(NamespaceExpr *node)
+{
+    node->name->accept(this);
+    std::cout << "::";
+    node->member->accept(this);
 }
 
 // Visit method for the AssignmentExpr node

@@ -16,7 +16,7 @@ int main(int argc, char argv) {
         y = y - 1.5;
     }
     
-    for (int64 i = 0; i < x; i++) {
+    for (int64 i = 0; i < x; local::i++++) {
         z = z + i;
     }
     

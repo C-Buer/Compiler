@@ -20,6 +20,7 @@ struct ExpressionStatement;
 struct Expression;
 struct Literal;
 struct IdentifierExpr;
+struct NamespaceExpr;
 struct AssignmentExpr;
 struct BinaryExpr;
 struct FunctionCallExpr;
@@ -42,6 +43,7 @@ struct ASTVisitor
     virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;
+    virtual void visit(NamespaceExpr *node) = 0;
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
     virtual void visit(FunctionCallExpr *node) = 0;
@@ -81,6 +83,16 @@ struct IdentifierExpr : Expression
     void accept(ASTVisitor *visitor) override;
 };
 
+struct NamespaceExpr : Expression
+{
+    std::unique_ptr<Expression> name;
+    std::unique_ptr<Expression> member;
+
+    NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
 struct AssignmentExpr : Expression
 {
     std::unique_ptr<Expression> left;
@@ -107,7 +119,7 @@ struct FunctionCallExpr : Expression
     std::unique_ptr<Expression> name;
     std::unique_ptr<Expression> parameters;
 
-    FunctionCallExpr(std::unique_ptr<Expression> name, std::unique_ptr<Expression> params);
+    FunctionCallExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params);
 
     void accept(ASTVisitor *visitor) override;
 };

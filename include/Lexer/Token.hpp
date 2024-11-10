@@ -74,17 +74,16 @@ enum class TokenType
     False,
 
     // Primitive Types
-    Int32,
     Float,
     Double,
     Char,
     Bool,
     Void,
     Int64,
+    Int32,
     Int16,
     Signed,
     Unsigned,
-    WChar_T,
 
     // End of file
     EndOfFile,

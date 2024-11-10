@@ -21,6 +21,17 @@ void IdentifierExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// NamespaceExpr Implementations
+NamespaceExpr::NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m)
+    : name(std::move(n)), member(std::move(m))
+{
+}
+
+void NamespaceExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // AssignmentExpr Implementations
 AssignmentExpr::AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
     : left(std::move(l)), right(std::move(r))

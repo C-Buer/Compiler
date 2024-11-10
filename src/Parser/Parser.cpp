@@ -2,6 +2,7 @@
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
 #include <iostream>
+#include <utility>
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -451,8 +452,21 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
     auto expr = parseUnaryFront();
     if (match(TokenType::Scope))
     {
+        if (!expr)
+        {
+            error("Expected name expression before scope", previousToken());
+            return nullptr;
+        }
+        auto member = parseUnaryBack();
+        if (!member)
+        {
+            error("Expected member expression after scope", previousToken());
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
     }
-    if (match(TokenType::Increment) || match(TokenType::Decrement))
+    while (match(TokenType::Increment) || match(TokenType::Decrement))
     {
         Token oper = previousToken();
         if (!expr)
@@ -461,7 +475,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
             return nullptr;
         }
         // For simplicity, treat unary as binary with left operand as null
-        return std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
+        expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
     }
     if (match(TokenType::LeftParen))
     {
@@ -555,9 +569,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     }
     if (match(TokenType::Identifier))
     {
-        auto id = previousToken().lexeme;
-
-        return std::make_unique<IdentifierExpr>(id);
+        return std::make_unique<IdentifierExpr>(previousToken().lexeme);
     }
     if (match(TokenType::LeftParen))
     {

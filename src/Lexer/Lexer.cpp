@@ -1,6 +1,8 @@
 #include "Lexer/Lexer.hpp"
+#include "Lexer/Token.hpp"
 #include <cctype>
 #include <iostream>
+#include <vector>
 
 Lexer::Lexer(const std::string &source) : source(source)
 {
@@ -250,7 +252,8 @@ std::vector<Token> Lexer::tokenize()
     }
 
     tokens.emplace_back(TokenType::EndOfFile, "", line, column);
-    return tokens;
+    std::vector<Token> result(tokens.begin(), tokens.end());
+    return result;
 }
 
 char Lexer::peek()

@@ -3,6 +3,9 @@
 
 #include "AST/AST.hpp"
 #include "Lexer/Lexer.hpp"
+#include <format>
+#include <iostream>
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -11,10 +14,13 @@ class Parser
   public:
     Parser(const std::vector<Token> &tokens);
     std::unique_ptr<Program> parse();
+    bool printErrorMsg();
 
   private:
     const std::vector<Token> &tokens;
     size_t current = 0;
+
+    std::list<std::string> errorMsgList;
 
     // Utility functions
     bool match(TokenType type);
@@ -40,8 +46,8 @@ class Parser
     std::unique_ptr<Expression> parseComparison();
     std::unique_ptr<Expression> parseTerm();
     std::unique_ptr<Expression> parseFactor();
-    std::unique_ptr<Expression> parseUnary();
-    std::unique_ptr<Expression> parseIdentifier();
+    std::unique_ptr<Expression> parseUnaryBack();
+    std::unique_ptr<Expression> parseUnaryFront();
     std::unique_ptr<Expression> parsePrimary();
     std::unique_ptr<Block> parseBlock();
     std::unique_ptr<Statement> parseExpressionStatement();

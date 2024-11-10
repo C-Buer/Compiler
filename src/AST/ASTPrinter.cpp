@@ -240,7 +240,8 @@ void ASTPrinter::visit(BinaryExpr *node)
 // Visit method for the FunctionCallExpr node
 void ASTPrinter::visit(FunctionCallExpr *node)
 {
-    std::cout << node->name << "(";
+    node->name->accept(this);
+    std::cout << "(";
     node->parameters->accept(this);
     std::cout << ")";
 }
@@ -248,7 +249,8 @@ void ASTPrinter::visit(FunctionCallExpr *node)
 // Visit method for the SubscriptExpr node
 void ASTPrinter::visit(SubscriptExpr *node)
 {
-    std::cout << node->name << "[";
+    node->name->accept(this);
+    std::cout << "[";
     node->parameters->accept(this);
     std::cout << "]";
 }

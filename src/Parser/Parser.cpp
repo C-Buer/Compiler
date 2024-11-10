@@ -1,12 +1,7 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
-#include <cctype>
-#include <cstdlib>
 #include <iostream>
-#include <memory>
-#include <utility>
-#include <vector>
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -63,6 +58,19 @@ std::unique_ptr<Program> Parser::parse()
     return program;
 }
 
+bool Parser::printErrorMsg()
+{
+    if (errorMsgList.empty())
+    {
+        return false;
+    }
+    for (auto &msg : errorMsgList)
+    {
+        std::cerr << msg;
+    }
+    return true;
+}
+
 bool Parser::match(TokenType type)
 {
     if (check(type))
@@ -104,8 +112,8 @@ bool Parser::isAtEnd() const
 
 void Parser::error(const std::string &message, const Token &token)
 {
-    std::cerr << "Error at line " << token.line << ", column " << token.column << ", token '" << token.lexeme
-              << "': " << message << "\n";
+    errorMsgList.push_back(std::format("Error at line {}, column{}, token '{}', error message:{}\n", token.line,
+                                       token.column, token.lexeme, message));
 }
 
 std::unique_ptr<Statement> Parser::parseStatement()
@@ -423,11 +431,11 @@ std::unique_ptr<Expression> Parser::parseTerm()
 
 std::unique_ptr<Expression> Parser::parseFactor()
 {
-    auto expr = parseUnary();
+    auto expr = parseUnaryBack();
     while (match(TokenType::Star) || match(TokenType::Slash) || match(TokenType::Percent))
     {
         Token oper = previousToken();
-        auto right = parseUnary();
+        auto right = parseUnaryBack();
         if (!right)
         {
             error("Expected expression after operator", oper);
@@ -438,12 +446,62 @@ std::unique_ptr<Expression> Parser::parseFactor()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseUnary()
+std::unique_ptr<Expression> Parser::parseUnaryBack()
+{
+    auto expr = parseUnaryFront();
+    if (match(TokenType::Scope))
+    {
+    }
+    if (match(TokenType::Increment) || match(TokenType::Decrement))
+    {
+        Token oper = previousToken();
+        if (!expr)
+        {
+            error("Expected expression before unary operator", oper);
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        return std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
+    }
+    if (match(TokenType::LeftParen))
+    {
+        if (!expr)
+        {
+            error("Expected name expression before function call", previousToken());
+            return nullptr;
+        }
+        std::unique_ptr<Expression> parameters = parseMultiExpr();
+        if (!match(TokenType::RightParen))
+        {
+            error("Expected ')' after function call", peekToken());
+            return nullptr;
+        }
+        return std::make_unique<FunctionCallExpr>(std::move(expr), std::move(parameters));
+    }
+    if (match(TokenType::LeftBracket))
+    {
+        if (!expr)
+        {
+            error("Expected expression before subscript", previousToken());
+            return nullptr;
+        }
+        std::unique_ptr<Expression> parameters = parseMultiExpr();
+        if (!match(TokenType::RightBracket))
+        {
+            error("Expected ']' after subscript", peekToken());
+            return nullptr;
+        }
+        return std::make_unique<SubscriptExpr>(std::move(expr), std::move(parameters));
+    }
+    return expr;
+}
+
+std::unique_ptr<Expression> Parser::parseUnaryFront()
 {
     if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
     {
         Token oper = previousToken();
-        auto right = parseUnary();
+        auto right = parseUnaryFront();
         if (!right)
         {
             error("Expected expression after unary operator", oper);
@@ -451,50 +509,6 @@ std::unique_ptr<Expression> Parser::parseUnary()
         }
         // For simplicity, treat unary as binary with left operand as null
         return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
-    }
-    return parseIdentifier();
-}
-
-std::unique_ptr<Expression> Parser::parseIdentifier()
-{
-    if (match(TokenType::Identifier))
-    {
-        auto id = previousToken().lexeme;
-        if (match(TokenType::Scope))
-        {
-        }
-        if (match(TokenType::Increment) || match(TokenType::Decrement))
-        {
-            Token oper = previousToken();
-            auto right = parseUnary();
-            if (!right)
-            {
-                error("Expected expression after unary operator", oper);
-                return nullptr;
-            }
-            // For simplicity, treat unary as binary with left operand as null
-            return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
-        }
-        if (match(TokenType::LeftParen))
-        {
-            std::unique_ptr<Expression> parameters = parseMultiExpr();
-            if (!match(TokenType::RightParen))
-            {
-                error("Expected ')' after function call", peekToken());
-                return nullptr;
-            }
-            return std::make_unique<FunctionCallExpr>(id, std::move(parameters));
-        }
-        if (match(TokenType::LeftBracket))
-        {
-            std::unique_ptr<Expression> parameters = parseMultiExpr();
-            if (!match(TokenType::RightBracket))
-            {
-                error("Expected ']' after function call", peekToken());
-                return nullptr;
-            }
-        }
-        return std::make_unique<IdentifierExpr>(id);
     }
     return parsePrimary();
 }
@@ -538,6 +552,12 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     if (match(TokenType::BooleanLiteral))
     {
         return std::make_unique<Literal>(previousToken().lexeme == "true");
+    }
+    if (match(TokenType::Identifier))
+    {
+        auto id = previousToken().lexeme;
+
+        return std::make_unique<IdentifierExpr>(id);
     }
     if (match(TokenType::LeftParen))
     {

@@ -104,20 +104,20 @@ struct BinaryExpr : Expression
 
 struct FunctionCallExpr : Expression
 {
-    std::string name;
+    std::unique_ptr<Expression> name;
     std::unique_ptr<Expression> parameters;
 
-    FunctionCallExpr(const std::string &name, std::unique_ptr<Expression> params);
+    FunctionCallExpr(std::unique_ptr<Expression> name, std::unique_ptr<Expression> params);
 
     void accept(ASTVisitor *visitor) override;
 };
 
 struct SubscriptExpr : Expression
 {
-    std::string name;
+    std::unique_ptr<Expression> name;
     std::unique_ptr<Expression> parameters;
 
-    SubscriptExpr(const std::string &name, std::unique_ptr<Expression> params);
+    SubscriptExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params);
 
     void accept(ASTVisitor *visitor) override;
 };

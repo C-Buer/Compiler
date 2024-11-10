@@ -43,8 +43,8 @@ void BinaryExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-FunctionCallExpr::FunctionCallExpr(const std::string &n, std::unique_ptr<Expression> params)
-    : name(n), parameters(std::move(params))
+FunctionCallExpr::FunctionCallExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params)
+    : name(std::move(n)), parameters(std::move(params))
 {
 }
 
@@ -53,8 +53,8 @@ void FunctionCallExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-SubscriptExpr::SubscriptExpr(const std::string &n, std::unique_ptr<Expression> params)
-    : name(n), parameters(std::move(params))
+SubscriptExpr::SubscriptExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params)
+    : name(std::move(n)), parameters(std::move(params))
 {
 }
 

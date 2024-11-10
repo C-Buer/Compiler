@@ -2,9 +2,11 @@
 #define LEXER_HPP
 
 #include "Token.hpp"
+#include <list>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 
 class Lexer
 {
@@ -17,7 +19,7 @@ class Lexer
     size_t current = 0;
     int line = 1;
     int column = 1;
-    std::vector<Token> tokens;
+    std::list<Token> tokens;
 
     std::unordered_map<std::string, TokenType> keywords = {{"auto", TokenType::Auto},
                                                            {"struct", TokenType::Struct},

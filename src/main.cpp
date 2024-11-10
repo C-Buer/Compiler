@@ -48,7 +48,11 @@ int main(int argc, char *argv[])
     ASTPrinter printer;
     program->accept(&printer);
 
-    std::cout << "Parsing completed successfully.\n";
+    if (!parser.printErrorMsg())
+    {
+        std::cout << "Parsing completed successfully.\n";
+    }
+
     std::cout << "Parse time: " << durationParser.count() << " us\n";
 
     return 0;

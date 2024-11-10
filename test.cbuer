@@ -16,13 +16,13 @@ int main(int argc, char argv) {
         y = y - 1.5;
     }
     
-    for (int64 i = 0; i < x; ++i) {
+    for (int64 i = 0; i < x; i++) {
         z = z + i;
     }
     
     while (z < 100) {
         z = z * 2;
     }
-    main(x, c);
+    main(x, c[1]);
     return 0;
 }

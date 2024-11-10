@@ -33,12 +33,8 @@ void ASTPrinter::visit(Program *node)
 void ASTPrinter::visit(VariableDeclaration *node)
 {
     printIndent();
-    std::cout << "VariableDeclaration: " << node->type << " " << node->name;
-    if (node->initializer)
-    {
-        std::cout << " = ";
-        node->initializer->accept(this);
-    }
+    std::cout << "VariableDeclaration: " << node->type << " ";
+    node->initializer->accept(this);
     std::cout << ";\n";
 }
 
@@ -245,6 +241,21 @@ void ASTPrinter::visit(BinaryExpr *node)
 void ASTPrinter::visit(FunctionCallExpr *node)
 {
     std::cout << node->name << "(";
+    node->parameters->accept(this);
+    std::cout << ")";
+}
+
+// Visit method for the SubscriptExpr node
+void ASTPrinter::visit(SubscriptExpr *node)
+{
+    std::cout << node->name << "[";
+    node->parameters->accept(this);
+    std::cout << "]";
+}
+
+// Visit method for the MultiExpr node
+void ASTPrinter::visit(MultiExpr *node)
+{
     for (auto it = node->parameters.begin(); it != node->parameters.end(); it++)
     {
         if (it + 1 == node->parameters.end())
@@ -257,5 +268,4 @@ void ASTPrinter::visit(FunctionCallExpr *node)
             std::cout << ", ";
         }
     }
-    std::cout << ")";
 }

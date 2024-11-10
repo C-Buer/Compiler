@@ -43,7 +43,27 @@ void BinaryExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-FunctionCallExpr::FunctionCallExpr(const std::string &n, std::vector<std::unique_ptr<Expression>> &params) : name(n)
+FunctionCallExpr::FunctionCallExpr(const std::string &n, std::unique_ptr<Expression> params)
+    : name(n), parameters(std::move(params))
+{
+}
+
+void FunctionCallExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+SubscriptExpr::SubscriptExpr(const std::string &n, std::unique_ptr<Expression> params)
+    : name(n), parameters(std::move(params))
+{
+}
+
+void SubscriptExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+MultiExpr::MultiExpr(std::vector<std::unique_ptr<Expression>> &params)
 {
     parameters.reserve(params.size());
     for (auto &tmp : params)
@@ -52,14 +72,14 @@ FunctionCallExpr::FunctionCallExpr(const std::string &n, std::vector<std::unique
     }
 }
 
-void FunctionCallExpr::accept(ASTVisitor *visitor)
+void MultiExpr::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
 
 // VariableDeclaration Implementations
-VariableDeclaration::VariableDeclaration(const std::string &t, const std::string &n, std::unique_ptr<Expression> init)
-    : type(t), name(n), initializer(std::move(init))
+VariableDeclaration::VariableDeclaration(const std::string &t, std::unique_ptr<Expression> init)
+    : type(t), initializer(std::move(init))
 {
 }
 

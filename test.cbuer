@@ -1,4 +1,7 @@
 // test.cbuer
+
+ptr malloc(){}
+
 int main(int argc, char argv) {
     int64 x = 10;
     float y = 20.5;

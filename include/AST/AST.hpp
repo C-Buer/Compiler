@@ -23,6 +23,8 @@ struct IdentifierExpr;
 struct AssignmentExpr;
 struct BinaryExpr;
 struct FunctionCallExpr;
+struct SubscriptExpr;
+struct MultiExpr;
 
 // Visitor Interface
 struct ASTVisitor
@@ -43,6 +45,8 @@ struct ASTVisitor
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
     virtual void visit(FunctionCallExpr *node) = 0;
+    virtual void visit(SubscriptExpr *node) = 0;
+    virtual void visit(MultiExpr *node) = 0;
     // Add more visit methods for additional AST nodes as needed
 };
 
@@ -101,9 +105,28 @@ struct BinaryExpr : Expression
 struct FunctionCallExpr : Expression
 {
     std::string name;
+    std::unique_ptr<Expression> parameters;
+
+    FunctionCallExpr(const std::string &name, std::unique_ptr<Expression> params);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct SubscriptExpr : Expression
+{
+    std::string name;
+    std::unique_ptr<Expression> parameters;
+
+    SubscriptExpr(const std::string &name, std::unique_ptr<Expression> params);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct MultiExpr : Expression
+{
     std::vector<std::unique_ptr<Expression>> parameters;
 
-    FunctionCallExpr(const std::string &name, std::vector<std::unique_ptr<Expression>> &params);
+    MultiExpr(std::vector<std::unique_ptr<Expression>> &params);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -117,10 +140,9 @@ struct Statement : ASTNode
 struct VariableDeclaration : Statement
 {
     std::string type;
-    std::string name;
     std::unique_ptr<Expression> initializer; // Optional
 
-    VariableDeclaration(const std::string &t, const std::string &n, std::unique_ptr<Expression> init = nullptr);
+    VariableDeclaration(const std::string &t, std::unique_ptr<Expression> init = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };

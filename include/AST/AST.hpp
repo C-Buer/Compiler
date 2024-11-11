@@ -184,9 +184,9 @@ struct VariableDeclaration : Statement
 struct StructDeclaration : Statement
 {
     std::string type;
-    ExpressionPtr body;
+    StatementPtr body;
 
-    StructDeclaration(const std::string &t, ExpressionPtr b);
+    StructDeclaration(const std::string &t, StatementPtr b = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };

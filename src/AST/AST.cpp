@@ -107,7 +107,7 @@ void VariableDeclaration::accept(ASTVisitor *visitor)
 }
 
 // StructDeclaration Implementations
-StructDeclaration::StructDeclaration(const std::string &t, ExpressionPtr b) : type(t), body(std::move(b))
+StructDeclaration::StructDeclaration(const std::string &t, StatementPtr b) : type(t), body(std::move(b))
 {
 }
 

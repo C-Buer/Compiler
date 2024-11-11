@@ -42,7 +42,14 @@ void ASTPrinter::visit(StructDeclaration *node)
 {
     printIndent();
     std::cout << "StructDeclaration: " << node->type;
-    node->body->accept(this);
+    if (node->body)
+    {
+        node->body->accept(this);
+    }
+    else
+    {
+        std::cout << ";\n";
+    }
 }
 
 // Visit method for the FunctionDeclaration node

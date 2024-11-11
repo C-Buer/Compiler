@@ -132,6 +132,10 @@ StatementPtr Parser::parseStatement()
     {
         return parseReturnStatement();
     }
+    if (match(TokenType::Struct))
+    {
+        return parseStructStatement();
+    }
     if (isType(peekToken().type))
     {
         // Look ahead to determine if it's a function or variable declaration
@@ -148,13 +152,13 @@ StatementPtr Parser::parseStatement()
             {
                 // It's a function declaration
                 current = save; // Reset to before type
-                return parseFunctionDeclaration();
+                return parseFunctionStatement();
             }
             else
             {
                 // It's a variable declaration
                 current = save; // Reset to before type
-                return parseVariableDeclaration();
+                return parseVariableStatement();
             }
         }
         else
@@ -172,7 +176,7 @@ StatementPtr Parser::parseStatement()
     return nullptr;
 }
 
-StatementPtr Parser::parseVariableDeclaration()
+StatementPtr Parser::parseVariableStatement()
 {
     // Check if the current token is a type
     if (isType(peekToken().type))
@@ -201,7 +205,27 @@ StatementPtr Parser::parseVariableDeclaration()
     return nullptr;
 }
 
-StatementPtr Parser::parseFunctionDeclaration()
+StatementPtr Parser::parseStructStatement()
+{
+    // Check if the current token is a type
+    Token typeToken = peekToken();
+    std::string type = typeToken.lexeme;
+    advanceToken(); // Consume the type token
+
+    StatementPtr body = parseBlock();
+    if (body)
+    {
+        return std::make_unique<StructDeclaration>(type, std::move(body));
+    }
+    if (match(TokenType::Semicolon))
+    {
+        return std::make_unique<StructDeclaration>(type);
+    }
+    error("Expected '{' to start struct body", peekToken());
+    return nullptr;
+}
+
+StatementPtr Parser::parseFunctionStatement()
 {
     // Assume the current token is a type
     if (!isType(peekToken().type))
@@ -393,7 +417,7 @@ StatementPtr Parser::parseForStatement()
     {
         if (isType(peekToken().type))
         {
-            initializer = parseVariableDeclaration();
+            initializer = parseVariableStatement();
         }
         else
         {

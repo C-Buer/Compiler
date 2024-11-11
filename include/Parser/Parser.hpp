@@ -33,8 +33,9 @@ class Parser
 
     // Parsing functions
     StatementPtr parseStatement();
-    StatementPtr parseVariableDeclaration();
-    StatementPtr parseFunctionDeclaration();
+    StatementPtr parseVariableStatement();
+    StatementPtr parseStructStatement();
+    StatementPtr parseFunctionStatement();
     StatementPtr parseReturnStatement();
     StatementPtr parseIfStatement();
     StatementPtr parseForStatement();

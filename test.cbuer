@@ -1,6 +1,6 @@
 // test.cbuer
 
-ptr malloc(){}
+ptr malloc();
 
 int main(int argc, char argv) {
     int64 x = 10;

@@ -14,6 +14,7 @@ struct ASTPrinter : ASTVisitor
     void visit(Program *node) override;
     void visit(VariableDeclaration *node) override;
     void visit(FunctionDeclaration *node) override;
+    void visit(FunctionDefinition *node) override;
     void visit(Block *node) override;
     void visit(ReturnStatement *node) override;
     void visit(IfStatement *node) override;

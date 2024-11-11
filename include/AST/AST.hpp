@@ -9,8 +9,10 @@
 
 // Forward declarations for Visitor
 struct Program;
+struct Statement;
 struct VariableDeclaration;
 struct FunctionDeclaration;
+struct FunctionDefinition;
 struct Block;
 struct ReturnStatement;
 struct IfStatement;
@@ -27,6 +29,9 @@ struct FunctionCallExpr;
 struct SubscriptExpr;
 struct MultiExpr;
 
+using ExpressionPtr = std::unique_ptr<Expression>;
+using StatementPtr = std::unique_ptr<Statement>;
+
 // Visitor Interface
 struct ASTVisitor
 {
@@ -35,6 +40,7 @@ struct ASTVisitor
     virtual void visit(Program *node) = 0;
     virtual void visit(VariableDeclaration *node) = 0;
     virtual void visit(FunctionDeclaration *node) = 0;
+    virtual void visit(FunctionDefinition *node) = 0;
     virtual void visit(Block *node) = 0;
     virtual void visit(ReturnStatement *node) = 0;
     virtual void visit(IfStatement *node) = 0;
@@ -85,20 +91,20 @@ struct IdentifierExpr : Expression
 
 struct NamespaceExpr : Expression
 {
-    std::unique_ptr<Expression> name;
-    std::unique_ptr<Expression> member;
+    ExpressionPtr name;
+    ExpressionPtr member;
 
-    NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m);
+    NamespaceExpr(ExpressionPtr n, ExpressionPtr m);
 
     void accept(ASTVisitor *visitor) override;
 };
 
 struct AssignmentExpr : Expression
 {
-    std::unique_ptr<Expression> left;
-    std::unique_ptr<Expression> right;
+    ExpressionPtr left;
+    ExpressionPtr right;
 
-    AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r);
+    AssignmentExpr(ExpressionPtr l, ExpressionPtr r);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -106,39 +112,39 @@ struct AssignmentExpr : Expression
 struct BinaryExpr : Expression
 {
     std::string op;
-    std::unique_ptr<Expression> left;
-    std::unique_ptr<Expression> right;
+    ExpressionPtr left;
+    ExpressionPtr right;
 
-    BinaryExpr(const std::string &oper, std::unique_ptr<Expression> l, std::unique_ptr<Expression> r);
+    BinaryExpr(const std::string &oper, ExpressionPtr l, ExpressionPtr r);
 
     void accept(ASTVisitor *visitor) override;
 };
 
 struct FunctionCallExpr : Expression
 {
-    std::unique_ptr<Expression> name;
-    std::unique_ptr<Expression> parameters;
+    ExpressionPtr name;
+    ExpressionPtr parameters;
 
-    FunctionCallExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params);
+    FunctionCallExpr(ExpressionPtr n, ExpressionPtr params);
 
     void accept(ASTVisitor *visitor) override;
 };
 
 struct SubscriptExpr : Expression
 {
-    std::unique_ptr<Expression> name;
-    std::unique_ptr<Expression> parameters;
+    ExpressionPtr name;
+    ExpressionPtr parameters;
 
-    SubscriptExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params);
+    SubscriptExpr(ExpressionPtr n, ExpressionPtr params);
 
     void accept(ASTVisitor *visitor) override;
 };
 
 struct MultiExpr : Expression
 {
-    std::vector<std::unique_ptr<Expression>> parameters;
+    std::vector<ExpressionPtr> parameters;
 
-    MultiExpr(std::vector<std::unique_ptr<Expression>> &params);
+    MultiExpr(std::vector<ExpressionPtr> &params);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -152,9 +158,9 @@ struct Statement : ASTNode
 struct VariableDeclaration : Statement
 {
     std::string type;
-    std::unique_ptr<Expression> initializer; // Optional
+    ExpressionPtr initializer;
 
-    VariableDeclaration(const std::string &t, std::unique_ptr<Expression> init = nullptr);
+    VariableDeclaration(const std::string &t, ExpressionPtr init = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -174,10 +180,22 @@ struct FunctionDeclaration : Statement
     std::string returnType;
     std::string name;
     std::vector<Parameter> parameters;
+
+    FunctionDeclaration(const std::string &retType, const std::string &n, const std::vector<Parameter> &params);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// Function Definition Node
+struct FunctionDefinition : Statement
+{
+    std::string returnType;
+    std::string name;
+    std::vector<Parameter> parameters;
     std::unique_ptr<Block> body;
 
-    FunctionDeclaration(const std::string &retType, const std::string &n, const std::vector<Parameter> &params,
-                        std::unique_ptr<Block> b);
+    FunctionDefinition(const std::string &retType, const std::string &n, const std::vector<Parameter> &params,
+                       std::unique_ptr<Block> b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -185,7 +203,7 @@ struct FunctionDeclaration : Statement
 // Block Node
 struct Block : Statement
 {
-    std::vector<std::unique_ptr<Statement>> statements;
+    std::vector<StatementPtr> statements;
 
     Block();
 
@@ -195,9 +213,9 @@ struct Block : Statement
 // Return Statement Node
 struct ReturnStatement : Statement
 {
-    std::unique_ptr<Expression> value; // Optional
+    ExpressionPtr value; // Optional
 
-    ReturnStatement(std::unique_ptr<Expression> val = nullptr);
+    ReturnStatement(ExpressionPtr val = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -205,12 +223,11 @@ struct ReturnStatement : Statement
 // If Statement Node
 struct IfStatement : Statement
 {
-    std::unique_ptr<Expression> condition;
+    ExpressionPtr condition;
     std::unique_ptr<Block> thenBranch;
-    std::unique_ptr<Statement> elseBranch; // Can be nullptr or another IfStatement
+    StatementPtr elseBranch; // Can be nullptr or another IfStatement
 
-    IfStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> thenB,
-                std::unique_ptr<Statement> elseB = nullptr);
+    IfStatement(ExpressionPtr cond, std::unique_ptr<Block> thenB, StatementPtr elseB = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -218,13 +235,12 @@ struct IfStatement : Statement
 // For Statement Node
 struct ForStatement : Statement
 {
-    std::unique_ptr<Statement> initializer; // VariableDeclaration or ExpressionStatement
-    std::unique_ptr<Expression> condition;  // Optional
-    std::unique_ptr<Expression> increment;  // Optional
+    StatementPtr initializer; // VariableDeclaration or ExpressionStatement
+    ExpressionPtr condition;  // Optional
+    ExpressionPtr increment;  // Optional
     std::unique_ptr<Block> body;
 
-    ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> cond, std::unique_ptr<Expression> inc,
-                 std::unique_ptr<Block> b);
+    ForStatement(StatementPtr init, ExpressionPtr cond, ExpressionPtr inc, std::unique_ptr<Block> b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -232,10 +248,10 @@ struct ForStatement : Statement
 // While Statement Node
 struct WhileStatement : Statement
 {
-    std::unique_ptr<Expression> condition;
+    ExpressionPtr condition;
     std::unique_ptr<Block> body;
 
-    WhileStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> b);
+    WhileStatement(ExpressionPtr cond, std::unique_ptr<Block> b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -243,9 +259,9 @@ struct WhileStatement : Statement
 // Expression Statement Node
 struct ExpressionStatement : Statement
 {
-    std::unique_ptr<Expression> expression;
+    ExpressionPtr expression;
 
-    ExpressionStatement(std::unique_ptr<Expression> expr);
+    ExpressionStatement(ExpressionPtr expr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -253,7 +269,7 @@ struct ExpressionStatement : Statement
 // Program Node
 struct Program : ASTNode
 {
-    std::vector<std::unique_ptr<Statement>> statements;
+    std::vector<StatementPtr> statements;
 
     void accept(ASTVisitor *visitor) override;
 };

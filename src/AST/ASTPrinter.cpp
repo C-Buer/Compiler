@@ -48,7 +48,22 @@ void ASTPrinter::visit(FunctionDeclaration *node)
         if (i < node->parameters.size() - 1)
             std::cout << ", ";
     }
-    std::cout << ")\n";
+    std::cout << ");\n";
+}
+
+// Visit method for the FunctionDefinition node
+void ASTPrinter::visit(FunctionDefinition *node)
+{
+    printIndent();
+    std::cout << "FunctionDefinition: " << node->returnType << " " << node->name << "(";
+    for (size_t i = 0; i < node->parameters.size(); ++i)
+    {
+        std::cout << node->parameters[i].type << " " << node->parameters[i].name;
+        if (i < node->parameters.size() - 1)
+            std::cout << ", ";
+    }
+    std::cout << ")";
+    std::cout << "\n";
     node->body->accept(this);
 }
 

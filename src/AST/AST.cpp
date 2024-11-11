@@ -21,8 +21,7 @@ void IdentifierExpr::accept(ASTVisitor *visitor)
 }
 
 // NamespaceExpr Implementations
-NamespaceExpr::NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m)
-    : name(std::move(n)), member(std::move(m))
+NamespaceExpr::NamespaceExpr(ExpressionPtr n, ExpressionPtr m) : name(std::move(n)), member(std::move(m))
 {
 }
 
@@ -32,8 +31,7 @@ void NamespaceExpr::accept(ASTVisitor *visitor)
 }
 
 // AssignmentExpr Implementations
-AssignmentExpr::AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
-    : left(std::move(l)), right(std::move(r))
+AssignmentExpr::AssignmentExpr(ExpressionPtr l, ExpressionPtr r) : left(std::move(l)), right(std::move(r))
 {
 }
 
@@ -43,7 +41,7 @@ void AssignmentExpr::accept(ASTVisitor *visitor)
 }
 
 // BinaryExpr Implementations
-BinaryExpr::BinaryExpr(const std::string &oper, std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
+BinaryExpr::BinaryExpr(const std::string &oper, ExpressionPtr l, ExpressionPtr r)
     : op(oper), left(std::move(l)), right(std::move(r))
 {
 }
@@ -53,7 +51,7 @@ void BinaryExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-FunctionCallExpr::FunctionCallExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params)
+FunctionCallExpr::FunctionCallExpr(ExpressionPtr n, ExpressionPtr params)
     : name(std::move(n)), parameters(std::move(params))
 {
 }
@@ -63,8 +61,7 @@ void FunctionCallExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-SubscriptExpr::SubscriptExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params)
-    : name(std::move(n)), parameters(std::move(params))
+SubscriptExpr::SubscriptExpr(ExpressionPtr n, ExpressionPtr params) : name(std::move(n)), parameters(std::move(params))
 {
 }
 
@@ -73,7 +70,7 @@ void SubscriptExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-MultiExpr::MultiExpr(std::vector<std::unique_ptr<Expression>> &params)
+MultiExpr::MultiExpr(std::vector<ExpressionPtr> &params)
 {
     parameters.reserve(params.size());
     for (auto &tmp : params)
@@ -88,7 +85,7 @@ void MultiExpr::accept(ASTVisitor *visitor)
 }
 
 // VariableDeclaration Implementations
-VariableDeclaration::VariableDeclaration(const std::string &t, std::unique_ptr<Expression> init)
+VariableDeclaration::VariableDeclaration(const std::string &t, ExpressionPtr init)
     : type(t), initializer(std::move(init))
 {
 }
@@ -105,12 +102,24 @@ Parameter::Parameter(const std::string &t, const std::string &n) : type(t), name
 
 // FunctionDeclaration Implementations
 FunctionDeclaration::FunctionDeclaration(const std::string &retType, const std::string &n,
-                                         const std::vector<Parameter> &params, std::unique_ptr<Block> b)
-    : returnType(retType), name(n), parameters(params), body(std::move(b))
+                                         const std::vector<Parameter> &params)
+    : returnType(retType), name(n), parameters(params)
 {
 }
 
 void FunctionDeclaration::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// FunctionDefinition Implementations
+FunctionDefinition::FunctionDefinition(const std::string &retType, const std::string &n,
+                                       const std::vector<Parameter> &params, std::unique_ptr<Block> b)
+    : returnType(retType), name(n), parameters(params), body(std::move(b))
+{
+}
+
+void FunctionDefinition::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
@@ -124,7 +133,7 @@ void Block::accept(ASTVisitor *visitor)
 }
 
 // ReturnStatement Implementations
-ReturnStatement::ReturnStatement(std::unique_ptr<Expression> val) : value(std::move(val))
+ReturnStatement::ReturnStatement(ExpressionPtr val) : value(std::move(val))
 {
 }
 
@@ -134,8 +143,7 @@ void ReturnStatement::accept(ASTVisitor *visitor)
 }
 
 // IfStatement Implementations
-IfStatement::IfStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> thenB,
-                         std::unique_ptr<Statement> elseB)
+IfStatement::IfStatement(ExpressionPtr cond, std::unique_ptr<Block> thenB, std::unique_ptr<Statement> elseB)
     : condition(std::move(cond)), thenBranch(std::move(thenB)), elseBranch(std::move(elseB))
 {
 }
@@ -146,8 +154,8 @@ void IfStatement::accept(ASTVisitor *visitor)
 }
 
 // ForStatement Implementations
-ForStatement::ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> cond,
-                           std::unique_ptr<Expression> inc, std::unique_ptr<Block> b)
+ForStatement::ForStatement(std::unique_ptr<Statement> init, ExpressionPtr cond, ExpressionPtr inc,
+                           std::unique_ptr<Block> b)
     : initializer(std::move(init)), condition(std::move(cond)), increment(std::move(inc)), body(std::move(b))
 {
 }
@@ -158,7 +166,7 @@ void ForStatement::accept(ASTVisitor *visitor)
 }
 
 // WhileStatement Implementations
-WhileStatement::WhileStatement(std::unique_ptr<Expression> cond, std::unique_ptr<Block> b)
+WhileStatement::WhileStatement(ExpressionPtr cond, std::unique_ptr<Block> b)
     : condition(std::move(cond)), body(std::move(b))
 {
 }
@@ -169,7 +177,7 @@ void WhileStatement::accept(ASTVisitor *visitor)
 }
 
 // ExpressionStatement Implementations
-ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : expression(std::move(expr))
+ExpressionStatement::ExpressionStatement(ExpressionPtr expr) : expression(std::move(expr))
 {
 }
 

@@ -113,7 +113,7 @@ void Parser::error(const std::string &message, const Token &token)
                                        token.column, token.lexeme, message));
 }
 
-std::unique_ptr<Statement> Parser::parseStatement()
+StatementPtr Parser::parseStatement()
 {
     if (match(TokenType::If))
     {
@@ -171,7 +171,7 @@ std::unique_ptr<Statement> Parser::parseStatement()
     return nullptr;
 }
 
-std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration()
+StatementPtr Parser::parseVariableDeclaration()
 {
     // Check if the current token is a type
     if (isType(peekToken().type))
@@ -180,7 +180,7 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration()
         std::string type = typeToken.lexeme;
         advanceToken(); // Consume the type token
 
-        std::unique_ptr<Expression> initializer = parseMultiExpr();
+        ExpressionPtr initializer = parseMultiExpr();
         if (!initializer)
         {
             error("Expected initializer expression", peekToken());
@@ -200,7 +200,7 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration()
     return nullptr;
 }
 
-std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration()
+StatementPtr Parser::parseFunctionDeclaration()
 {
     // Assume the current token is a type
     if (!isType(peekToken().type))
@@ -274,6 +274,11 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration()
         return nullptr;
     }
 
+    if (match(TokenType::Semicolon))
+    {
+        return std::make_unique<FunctionDeclaration>(returnType, name, parameters);
+    }
+
     // Parse function body (block)
     if (!match(TokenType::LeftBrace))
     {
@@ -288,7 +293,7 @@ std::unique_ptr<FunctionDeclaration> Parser::parseFunctionDeclaration()
         return nullptr;
     }
 
-    return std::make_unique<FunctionDeclaration>(returnType, name, parameters, std::move(body));
+    return std::make_unique<FunctionDefinition>(returnType, name, parameters, std::move(body));
 }
 
 std::unique_ptr<Block> Parser::parseBlock()
@@ -318,9 +323,9 @@ std::unique_ptr<Block> Parser::parseBlock()
     return block;
 }
 
-std::unique_ptr<Expression> Parser::parseMultiExpr()
+ExpressionPtr Parser::parseMultiExpr()
 {
-    std::vector<std::unique_ptr<Expression>> parameters;
+    std::vector<ExpressionPtr> parameters;
     for (bool isBegin = true; !check(TokenType::RightParen) && !check(TokenType::RightBracket) &&
                               !check(TokenType::RightBrace) && !check(TokenType::Semicolon);
          isBegin = false)
@@ -341,7 +346,7 @@ std::unique_ptr<Expression> Parser::parseMultiExpr()
     return std::make_unique<MultiExpr>(parameters);
 }
 
-std::unique_ptr<Expression> Parser::parseExpression()
+ExpressionPtr Parser::parseExpression()
 {
     auto startPos = current;
     auto expr = parsePrimary();
@@ -380,7 +385,7 @@ std::unique_ptr<Expression> Parser::parseExpression()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseEquality()
+ExpressionPtr Parser::parseEquality()
 {
     auto startPos = current;
     auto expr = parsePrimary();
@@ -408,7 +413,7 @@ std::unique_ptr<Expression> Parser::parseEquality()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseComparison()
+ExpressionPtr Parser::parseComparison()
 {
     auto startPos = current;
     auto expr = parsePrimary();
@@ -437,7 +442,7 @@ std::unique_ptr<Expression> Parser::parseComparison()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseTerm()
+ExpressionPtr Parser::parseTerm()
 {
     auto expr = parseFactor();
     while (match(TokenType::Plus) || match(TokenType::Minus))
@@ -454,7 +459,7 @@ std::unique_ptr<Expression> Parser::parseTerm()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseFactor()
+ExpressionPtr Parser::parseFactor()
 {
     auto expr = parseUnaryBack();
     while (match(TokenType::Star) || match(TokenType::Slash) || match(TokenType::Percent))
@@ -471,7 +476,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseUnaryBack()
+ExpressionPtr Parser::parseUnaryBack()
 {
     auto expr = parseMemberAccess();
     while (match(TokenType::Increment) || match(TokenType::Decrement))
@@ -488,7 +493,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseMemberAccess()
+ExpressionPtr Parser::parseMemberAccess()
 {
     auto expr = parseUnaryFront();
     if (match(TokenType::Scope))
@@ -514,7 +519,7 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
             error("Expected name expression before function call", previousToken());
             return nullptr;
         }
-        std::unique_ptr<Expression> parameters = parseMultiExpr();
+        ExpressionPtr parameters = parseMultiExpr();
         if (!match(TokenType::RightParen))
         {
             error("Expected ')' after function call", peekToken());
@@ -529,7 +534,7 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
             error("Expected expression before subscript", previousToken());
             return nullptr;
         }
-        std::unique_ptr<Expression> parameters = parseMultiExpr();
+        ExpressionPtr parameters = parseMultiExpr();
         if (!match(TokenType::RightBracket))
         {
             error("Expected ']' after subscript", peekToken());
@@ -540,7 +545,7 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseUnaryFront()
+ExpressionPtr Parser::parseUnaryFront()
 {
     if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
     {
@@ -557,7 +562,7 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
     return parsePrimary();
 }
 
-std::unique_ptr<Expression> Parser::parsePrimary()
+ExpressionPtr Parser::parsePrimary()
 {
     if (match(TokenType::IntegerLiteral))
     {
@@ -616,7 +621,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     return nullptr;
 }
 
-std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
+StatementPtr Parser::parseReturnStatement()
 {
     auto returnStmt = std::make_unique<ReturnStatement>();
 
@@ -640,7 +645,7 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
 }
 
 // Implement parseIfStatement
-std::unique_ptr<IfStatement> Parser::parseIfStatement()
+StatementPtr Parser::parseIfStatement()
 {
     // Parse '('
     if (!match(TokenType::LeftParen))
@@ -679,7 +684,7 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement()
     }
 
     // Parse optional elseBranch
-    std::unique_ptr<Statement> elseBranch = nullptr;
+    StatementPtr elseBranch = nullptr;
     if (match(TokenType::Else))
     {
         if (match(TokenType::If))
@@ -706,7 +711,7 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement()
 }
 
 // Implement parseForStatement
-std::unique_ptr<ForStatement> Parser::parseForStatement()
+StatementPtr Parser::parseForStatement()
 {
     // Parse '('
     if (!match(TokenType::LeftParen))
@@ -716,7 +721,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     }
 
     // Parse initializer
-    std::unique_ptr<Statement> initializer = nullptr;
+    StatementPtr initializer = nullptr;
     if (!match(TokenType::Semicolon))
     {
         if (isType(peekToken().type))
@@ -730,7 +735,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     }
 
     // Parse condition
-    std::unique_ptr<Expression> condition = nullptr;
+    ExpressionPtr condition = nullptr;
     if (!match(TokenType::Semicolon))
     {
         condition = parseExpression();
@@ -748,7 +753,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     }
 
     // Parse increment
-    std::unique_ptr<Expression> increment = nullptr;
+    ExpressionPtr increment = nullptr;
     if (!check(TokenType::RightParen))
     {
         increment = parseMultiExpr();
@@ -780,7 +785,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
 }
 
 // Implement parseWhileStatement
-std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
+StatementPtr Parser::parseWhileStatement()
 {
     // Parse '('
     if (!match(TokenType::LeftParen))
@@ -822,7 +827,7 @@ std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
 }
 
 // Implement parseExpressionStatement
-std::unique_ptr<Statement> Parser::parseExpressionStatement()
+StatementPtr Parser::parseExpressionStatement()
 {
     auto expr = parseMultiExpr();
     if (!expr)

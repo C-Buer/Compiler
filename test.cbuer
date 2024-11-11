@@ -1,5 +1,13 @@
 // test.cbuer
 
+struct test;
+
+struct test
+{
+    int a;
+    float b;
+}
+
 ptr malloc();
 
 int main(int argc, char argv) {

@@ -2,9 +2,9 @@ Program = StatementList ;
 
 StatementList = { Statement } ;
 
-Statement = VariableDeclaration
+Statement = VariableDefinition
           | FunctionDeclaration
-          | StructDeclaration
+          | StructDefinition
           | ClassDeclaration
           | UnionDeclaration
           | EnumDeclaration
@@ -18,11 +18,11 @@ Statement = VariableDeclaration
           | NamespaceDeclaration
           ;
 
-VariableDeclaration = Type , Identifier , [ "=" , Expression ] , ";" ;
+VariableDefinition = Type , Identifier , [ "=" , Expression ] , ";" ;
 
 FunctionDeclaration = ("auto" | Type) , Identifier , "(" , [ ParameterList ] , ")" , Block | ("auto" | Type) , Identifier , "<" , TypeList , ">" , "(" , [ ParameterList ] , ")" , Block;
 
-StructDeclaration = "struct" , Identifier , "{" , { StructMember } , "}" , ";" ;
+StructDefinition = "struct" , Identifier , "{" , { StructMember } , "}" , ";" ;
 
 ClassDeclaration = "class" , Identifier , "{" , { ClassMember } , "}" , ";" ;
 
@@ -34,9 +34,9 @@ MatchStatement = "match" , "(" , Expression , ")" , "{" , { MatchCase } , "}" ;
 
 ExpressionStatement = Expression , ";" ;
 
-IfStatement = "if" , "(" , [ VariableDeclaration | ExpressionStatement ] , Expression , ")" , Block , [ "else" , ( Block | IfStatement ) ] ;
+IfStatement = "if" , "(" , [ VariableDefinition | ExpressionStatement ] , Expression , ")" , Block , [ "else" , ( Block | IfStatement ) ] ;
 
-ForStatement = "for" , "(" , [ VariableDeclaration | ExpressionStatement ] , ";" , [ Expression ] , ";" , [ Expression ] , ")" , Block ;
+ForStatement = "for" , "(" , [ VariableDefinition | ExpressionStatement ] , ";" , [ Expression ] , ";" , [ Expression ] , ")" , Block ;
 
 WhileStatement = "while" , "(" , Expression , ")" , Block ;
 
@@ -64,23 +64,23 @@ ParameterList = Parameter , { "," , Parameter } ;
 
 Parameter = Type , Identifier ;
 
-StructMember = VariableDeclaration
+StructMember = VariableDefinition
              | FunctionDeclaration
              | "public:"
              | "private:"
              | "protected:"
              ;
 
-ClassMember = VariableDeclaration
+ClassMember = VariableDefinition
              | FunctionDeclaration
              | "public:"
              | "private:"
              | "protected:"
              ;
 
-UnionMember = VariableDeclaration;
+UnionMember = VariableDefinition;
 
-EnumMember = Identifier , [ "{" , { VariableDeclaration } , "}" ] , [ "=" , IntegerLiteral ] , "," ;
+EnumMember = Identifier , [ "{" , { VariableDefinition } , "}" ] , [ "=" , IntegerLiteral ] , "," ;
 
 Literal = IntegerLiteral | FloatingLiteral | StringLiteral | CharLiteral | BooleanLiteral;
 

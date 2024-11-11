@@ -32,30 +32,30 @@ class Parser
     void error(const std::string &message, const Token &token);
 
     // Parsing functions
-    StatementPtr parseStatement();
-    StatementPtr parseVariableStatement();
-    StatementPtr parseStructStatement();
-    StatementPtr parseFunctionStatement();
-    StatementPtr parseReturnStatement();
-    StatementPtr parseIfStatement();
-    StatementPtr parseForStatement();
-    StatementPtr parseWhileStatement();
-    StatementPtr parseExpressionStatement();
-    ExpressionPtr parseMultiExpr();
-    ExpressionPtr parseParamExpr();
-    ExpressionPtr parseAssignExpr();
-    ExpressionPtr parseExpression();
-    ExpressionPtr parseParameter();
-    ExpressionPtr parseAssignment();
-    ExpressionPtr parseEquality();
-    ExpressionPtr parseComparison();
-    ExpressionPtr parseTerm();
-    ExpressionPtr parseFactor();
-    ExpressionPtr parseUnaryBack();
-    ExpressionPtr parseMemberAccess();
-    ExpressionPtr parseUnaryFront();
-    ExpressionPtr parsePrimary();
-    StatementPtr parseBlock();
+    std::unique_ptr<Statement> parseStatement();
+    std::unique_ptr<Statement> parseVariableStatement();
+    std::unique_ptr<Statement> parseStructStatement();
+    std::unique_ptr<Statement> parseFunctionStatement();
+    std::unique_ptr<Statement> parseReturnStatement();
+    std::unique_ptr<Statement> parseIfStatement();
+    std::unique_ptr<Statement> parseForStatement();
+    std::unique_ptr<Statement> parseWhileStatement();
+    std::unique_ptr<Statement> parseExpressionStatement();
+    std::unique_ptr<Expression> parseMultiExpr();
+    std::unique_ptr<Expression> parseParamExpr();
+    std::unique_ptr<Expression> parseAssignExpr();
+    std::unique_ptr<Expression> parseExpression();
+    std::unique_ptr<Expression> parseParameter();
+    std::unique_ptr<Expression> parseAssignment();
+    std::unique_ptr<Expression> parseEquality();
+    std::unique_ptr<Expression> parseComparison();
+    std::unique_ptr<Expression> parseTerm();
+    std::unique_ptr<Expression> parseFactor();
+    std::unique_ptr<Expression> parseUnaryBack();
+    std::unique_ptr<Expression> parseMemberAccess();
+    std::unique_ptr<Expression> parseUnaryFront();
+    std::unique_ptr<Expression> parsePrimary();
+    std::unique_ptr<Statement> parseBlock();
 
     // Helper function to check if a token is a type
     bool isBaseType(TokenType type) const;

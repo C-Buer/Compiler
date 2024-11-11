@@ -28,28 +28,21 @@ void ASTPrinter::visit(Program *node)
     indentLevel--;
 }
 
-// Visit method for the VariableDeclaration node
-void ASTPrinter::visit(VariableDeclaration *node)
+// Visit method for the VariableDefinition node
+void ASTPrinter::visit(VariableDefinition *node)
 {
     printIndent();
-    std::cout << "VariableDeclaration: " << node->type << " ";
+    std::cout << "VariableDefinition: " << node->type << " ";
     node->initializer->accept(this);
     std::cout << ";\n";
 }
 
-// Visit method for the StructDeclaration node
-void ASTPrinter::visit(StructDeclaration *node)
+// Visit method for the StructDefinition node
+void ASTPrinter::visit(StructDefinition *node)
 {
     printIndent();
-    std::cout << "StructDeclaration: " << node->type;
-    if (node->body)
-    {
-        node->body->accept(this);
-    }
-    else
-    {
-        std::cout << ";\n";
-    }
+    std::cout << "StructDefinition: " << node->type << "\n";
+    node->body->accept(this);
 }
 
 // Visit method for the FunctionDeclaration node

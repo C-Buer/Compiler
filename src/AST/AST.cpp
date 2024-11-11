@@ -106,6 +106,16 @@ void VariableDeclaration::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// StructDeclaration Implementations
+StructDeclaration::StructDeclaration(const std::string &t, ExpressionPtr b) : type(t), body(std::move(b))
+{
+}
+
+void StructDeclaration::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // FunctionDeclaration Implementations
 FunctionDeclaration::FunctionDeclaration(const std::string &retType, const std::string &n, ExpressionPtr params)
     : returnType(retType), name(n), parameters(std::move(params))
@@ -119,7 +129,7 @@ void FunctionDeclaration::accept(ASTVisitor *visitor)
 
 // FunctionDefinition Implementations
 FunctionDefinition::FunctionDefinition(const std::string &retType, const std::string &n, ExpressionPtr params,
-                                       std::unique_ptr<Block> b)
+                                       StatementPtr b)
     : returnType(retType), name(n), parameters(std::move(params)), body(std::move(b))
 {
 }
@@ -148,7 +158,7 @@ void ReturnStatement::accept(ASTVisitor *visitor)
 }
 
 // IfStatement Implementations
-IfStatement::IfStatement(ExpressionPtr cond, std::unique_ptr<Block> thenB, std::unique_ptr<Statement> elseB)
+IfStatement::IfStatement(ExpressionPtr cond, StatementPtr thenB, std::unique_ptr<Statement> elseB)
     : condition(std::move(cond)), thenBranch(std::move(thenB)), elseBranch(std::move(elseB))
 {
 }
@@ -159,8 +169,7 @@ void IfStatement::accept(ASTVisitor *visitor)
 }
 
 // ForStatement Implementations
-ForStatement::ForStatement(std::unique_ptr<Statement> init, ExpressionPtr cond, ExpressionPtr inc,
-                           std::unique_ptr<Block> b)
+ForStatement::ForStatement(std::unique_ptr<Statement> init, ExpressionPtr cond, ExpressionPtr inc, StatementPtr b)
     : initializer(std::move(init)), condition(std::move(cond)), increment(std::move(inc)), body(std::move(b))
 {
 }
@@ -171,8 +180,7 @@ void ForStatement::accept(ASTVisitor *visitor)
 }
 
 // WhileStatement Implementations
-WhileStatement::WhileStatement(ExpressionPtr cond, std::unique_ptr<Block> b)
-    : condition(std::move(cond)), body(std::move(b))
+WhileStatement::WhileStatement(ExpressionPtr cond, StatementPtr b) : condition(std::move(cond)), body(std::move(b))
 {
 }
 

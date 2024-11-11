@@ -37,6 +37,14 @@ void ASTPrinter::visit(VariableDeclaration *node)
     std::cout << ";\n";
 }
 
+// Visit method for the StructDeclaration node
+void ASTPrinter::visit(StructDeclaration *node)
+{
+    printIndent();
+    std::cout << "StructDeclaration: " << node->type;
+    node->body->accept(this);
+}
+
 // Visit method for the FunctionDeclaration node
 void ASTPrinter::visit(FunctionDeclaration *node)
 {

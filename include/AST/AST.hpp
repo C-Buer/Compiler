@@ -11,6 +11,7 @@
 struct Program;
 struct Statement;
 struct VariableDeclaration;
+struct StructDeclaration;
 struct FunctionDeclaration;
 struct FunctionDefinition;
 struct Block;
@@ -40,6 +41,7 @@ struct ASTVisitor
 
     virtual void visit(Program *node) = 0;
     virtual void visit(VariableDeclaration *node) = 0;
+    virtual void visit(StructDeclaration *node) = 0;
     virtual void visit(FunctionDeclaration *node) = 0;
     virtual void visit(FunctionDefinition *node) = 0;
     virtual void visit(Block *node) = 0;
@@ -167,12 +169,24 @@ struct Statement : ASTNode
     // Base class for all statements
 };
 
+// Variable Declaration Node
 struct VariableDeclaration : Statement
 {
     std::string type;
     ExpressionPtr initializer;
 
     VariableDeclaration(const std::string &t, ExpressionPtr init = nullptr);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// Struct Declaration Node
+struct StructDeclaration : Statement
+{
+    std::string type;
+    ExpressionPtr body;
+
+    StructDeclaration(const std::string &t, ExpressionPtr b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -195,10 +209,9 @@ struct FunctionDefinition : Statement
     std::string returnType;
     std::string name;
     ExpressionPtr parameters;
-    std::unique_ptr<Block> body;
+    StatementPtr body;
 
-    FunctionDefinition(const std::string &retType, const std::string &n, ExpressionPtr params,
-                       std::unique_ptr<Block> b);
+    FunctionDefinition(const std::string &retType, const std::string &n, ExpressionPtr params, StatementPtr b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -227,10 +240,10 @@ struct ReturnStatement : Statement
 struct IfStatement : Statement
 {
     ExpressionPtr condition;
-    std::unique_ptr<Block> thenBranch;
+    StatementPtr thenBranch;
     StatementPtr elseBranch; // Can be nullptr or another IfStatement
 
-    IfStatement(ExpressionPtr cond, std::unique_ptr<Block> thenB, StatementPtr elseB = nullptr);
+    IfStatement(ExpressionPtr cond, StatementPtr thenB, StatementPtr elseB = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -241,9 +254,9 @@ struct ForStatement : Statement
     StatementPtr initializer; // VariableDeclaration or ExpressionStatement
     ExpressionPtr condition;  // Optional
     ExpressionPtr increment;  // Optional
-    std::unique_ptr<Block> body;
+    StatementPtr body;
 
-    ForStatement(StatementPtr init, ExpressionPtr cond, ExpressionPtr inc, std::unique_ptr<Block> b);
+    ForStatement(StatementPtr init, ExpressionPtr cond, ExpressionPtr inc, StatementPtr b);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -252,9 +265,9 @@ struct ForStatement : Statement
 struct WhileStatement : Statement
 {
     ExpressionPtr condition;
-    std::unique_ptr<Block> body;
+    StatementPtr body;
 
-    WhileStatement(ExpressionPtr cond, std::unique_ptr<Block> b);
+    WhileStatement(ExpressionPtr cond, StatementPtr b);
 
     void accept(ASTVisitor *visitor) override;
 };

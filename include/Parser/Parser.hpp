@@ -42,6 +42,7 @@ class Parser
     StatementPtr parseExpressionStatement();
     ExpressionPtr parseMultiExpr();
     ExpressionPtr parseParamExpr();
+    ExpressionPtr parseAssignExpr();
     ExpressionPtr parseExpression();
     ExpressionPtr parseParameter();
     ExpressionPtr parseAssignment();
@@ -53,7 +54,7 @@ class Parser
     ExpressionPtr parseMemberAccess();
     ExpressionPtr parseUnaryFront();
     ExpressionPtr parsePrimary();
-    std::unique_ptr<Block> parseBlock();
+    StatementPtr parseBlock();
 
     // Helper function to check if a token is a type
     bool isBaseType(TokenType type) const;

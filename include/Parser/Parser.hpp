@@ -41,7 +41,10 @@ class Parser
     StatementPtr parseWhileStatement();
     StatementPtr parseExpressionStatement();
     ExpressionPtr parseMultiExpr();
+    ExpressionPtr parseParamExpr();
     ExpressionPtr parseExpression();
+    ExpressionPtr parseParameter();
+    ExpressionPtr parseAssignment();
     ExpressionPtr parseEquality();
     ExpressionPtr parseComparison();
     ExpressionPtr parseTerm();

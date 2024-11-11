@@ -24,6 +24,7 @@ struct Literal;
 struct IdentifierExpr;
 struct NamespaceExpr;
 struct AssignmentExpr;
+struct ParameterExpr;
 struct BinaryExpr;
 struct FunctionCallExpr;
 struct SubscriptExpr;
@@ -51,6 +52,7 @@ struct ASTVisitor
     virtual void visit(IdentifierExpr *node) = 0;
     virtual void visit(NamespaceExpr *node) = 0;
     virtual void visit(AssignmentExpr *node) = 0;
+    virtual void visit(ParameterExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
     virtual void visit(FunctionCallExpr *node) = 0;
     virtual void visit(SubscriptExpr *node) = 0;
@@ -105,6 +107,16 @@ struct AssignmentExpr : Expression
     ExpressionPtr right;
 
     AssignmentExpr(ExpressionPtr l, ExpressionPtr r);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct ParameterExpr : Expression
+{
+    std::string type;
+    ExpressionPtr right;
+
+    ParameterExpr(const std::string &t, ExpressionPtr r);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -165,23 +177,14 @@ struct VariableDeclaration : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
-// Parameter structure
-struct Parameter
-{
-    std::string type;
-    std::string name;
-
-    Parameter(const std::string &t, const std::string &n);
-};
-
 // Function Declaration Node
 struct FunctionDeclaration : Statement
 {
     std::string returnType;
     std::string name;
-    std::vector<Parameter> parameters;
+    ExpressionPtr parameters;
 
-    FunctionDeclaration(const std::string &retType, const std::string &n, const std::vector<Parameter> &params);
+    FunctionDeclaration(const std::string &retType, const std::string &n, ExpressionPtr params);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -191,10 +194,10 @@ struct FunctionDefinition : Statement
 {
     std::string returnType;
     std::string name;
-    std::vector<Parameter> parameters;
+    ExpressionPtr parameters;
     std::unique_ptr<Block> body;
 
-    FunctionDefinition(const std::string &retType, const std::string &n, const std::vector<Parameter> &params,
+    FunctionDefinition(const std::string &retType, const std::string &n, ExpressionPtr params,
                        std::unique_ptr<Block> b);
 
     void accept(ASTVisitor *visitor) override;

@@ -3,7 +3,6 @@
 #define AST_PRINTER_HPP
 
 #include "AST.hpp"
-#include <string>
 
 // ASTPrinter: A concrete visitor to print the AST in Microsoft style with proper indentation
 struct ASTPrinter : ASTVisitor
@@ -25,6 +24,7 @@ struct ASTPrinter : ASTVisitor
     void visit(IdentifierExpr *node) override;
     void visit(NamespaceExpr *node) override;
     void visit(AssignmentExpr *node) override;
+    void visit(ParameterExpr *node) override;
     void visit(BinaryExpr *node) override;
     void visit(FunctionCallExpr *node) override;
     void visit(SubscriptExpr *node) override;

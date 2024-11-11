@@ -42,12 +42,7 @@ void ASTPrinter::visit(FunctionDeclaration *node)
 {
     printIndent();
     std::cout << "FunctionDeclaration: " << node->returnType << " " << node->name << "(";
-    for (size_t i = 0; i < node->parameters.size(); ++i)
-    {
-        std::cout << node->parameters[i].type << " " << node->parameters[i].name;
-        if (i < node->parameters.size() - 1)
-            std::cout << ", ";
-    }
+    node->parameters->accept(this);
     std::cout << ");\n";
 }
 
@@ -56,14 +51,8 @@ void ASTPrinter::visit(FunctionDefinition *node)
 {
     printIndent();
     std::cout << "FunctionDefinition: " << node->returnType << " " << node->name << "(";
-    for (size_t i = 0; i < node->parameters.size(); ++i)
-    {
-        std::cout << node->parameters[i].type << " " << node->parameters[i].name;
-        if (i < node->parameters.size() - 1)
-            std::cout << ", ";
-    }
-    std::cout << ")";
-    std::cout << "\n";
+    node->parameters->accept(this);
+    std::cout << ")\n";
     node->body->accept(this);
 }
 
@@ -240,6 +229,13 @@ void ASTPrinter::visit(AssignmentExpr *node)
 {
     node->left->accept(this);
     std::cout << " = ";
+    node->right->accept(this);
+}
+
+// Visit method for the AssignmentExpr node
+void ASTPrinter::visit(ParameterExpr *node)
+{
+    std::cout << node->type << " ";
     node->right->accept(this);
 }
 

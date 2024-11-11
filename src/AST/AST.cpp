@@ -1,4 +1,5 @@
 #include "AST/AST.hpp"
+#include <utility>
 
 // Literal Implementations
 Literal::Literal(const std::variant<int64_t, double, std::string, char, bool> &val) : value(val)
@@ -36,6 +37,16 @@ AssignmentExpr::AssignmentExpr(ExpressionPtr l, ExpressionPtr r) : left(std::mov
 }
 
 void AssignmentExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// ParameterExpr Implementations
+ParameterExpr::ParameterExpr(const std::string &t, ExpressionPtr r) : type(t), right(std::move(r))
+{
+}
+
+void ParameterExpr::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
@@ -95,15 +106,9 @@ void VariableDeclaration::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-// Parameter Implementations
-Parameter::Parameter(const std::string &t, const std::string &n) : type(t), name(n)
-{
-}
-
 // FunctionDeclaration Implementations
-FunctionDeclaration::FunctionDeclaration(const std::string &retType, const std::string &n,
-                                         const std::vector<Parameter> &params)
-    : returnType(retType), name(n), parameters(params)
+FunctionDeclaration::FunctionDeclaration(const std::string &retType, const std::string &n, ExpressionPtr params)
+    : returnType(retType), name(n), parameters(std::move(params))
 {
 }
 
@@ -113,9 +118,9 @@ void FunctionDeclaration::accept(ASTVisitor *visitor)
 }
 
 // FunctionDefinition Implementations
-FunctionDefinition::FunctionDefinition(const std::string &retType, const std::string &n,
-                                       const std::vector<Parameter> &params, std::unique_ptr<Block> b)
-    : returnType(retType), name(n), parameters(params), body(std::move(b))
+FunctionDefinition::FunctionDefinition(const std::string &retType, const std::string &n, ExpressionPtr params,
+                                       std::unique_ptr<Block> b)
+    : returnType(retType), name(n), parameters(std::move(params)), body(std::move(b))
 {
 }
 

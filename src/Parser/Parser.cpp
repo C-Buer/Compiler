@@ -1,6 +1,7 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
+#include <utility>
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -230,43 +231,7 @@ StatementPtr Parser::parseFunctionDeclaration()
     }
 
     // Parse parameters
-    std::vector<Parameter> parameters;
-    if (!check(TokenType::RightParen))
-    { // Non-empty parameter list
-        while (true)
-        {
-            if (!isType(peekToken().type))
-            {
-                error("Expected parameter type", peekToken());
-                return nullptr;
-            }
-
-            Token paramTypeToken = peekToken();
-            std::string paramType = paramTypeToken.lexeme;
-            advanceToken(); // Consume parameter type
-
-            if (!check(TokenType::Identifier))
-            {
-                error("Expected parameter name", peekToken());
-                return nullptr;
-            }
-
-            Token paramNameToken = peekToken();
-            std::string paramName = paramNameToken.lexeme;
-            advanceToken(); // Consume parameter name
-
-            parameters.emplace_back(paramType, paramName);
-
-            if (match(TokenType::Comma))
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
+    auto parameters = parseParamExpr();
 
     if (!match(TokenType::RightParen))
     {
@@ -276,7 +241,7 @@ StatementPtr Parser::parseFunctionDeclaration()
 
     if (match(TokenType::Semicolon))
     {
-        return std::make_unique<FunctionDeclaration>(returnType, name, parameters);
+        return std::make_unique<FunctionDeclaration>(returnType, name, std::move(parameters));
     }
 
     // Parse function body (block)
@@ -293,7 +258,7 @@ StatementPtr Parser::parseFunctionDeclaration()
         return nullptr;
     }
 
-    return std::make_unique<FunctionDefinition>(returnType, name, parameters, std::move(body));
+    return std::make_unique<FunctionDefinition>(returnType, name, std::move(parameters), std::move(body));
 }
 
 std::unique_ptr<Block> Parser::parseBlock()
@@ -346,14 +311,65 @@ ExpressionPtr Parser::parseMultiExpr()
     return std::make_unique<MultiExpr>(parameters);
 }
 
+ExpressionPtr Parser::parseParamExpr()
+{
+    std::vector<ExpressionPtr> parameters;
+    for (bool isBegin = true; !check(TokenType::RightParen) && !check(TokenType::RightBracket) &&
+                              !check(TokenType::RightBrace) && !check(TokenType::Semicolon);
+         isBegin = false)
+    {
+        if (!match(TokenType::Comma) && !isBegin)
+        {
+            error("Expected comma after experssion", peekToken());
+            return nullptr;
+        }
+        auto expr = parseParameter();
+        if (!expr)
+        {
+            error("Expected expression after comma", peekToken());
+            return nullptr;
+        }
+        parameters.push_back(std::move(expr));
+    }
+    return std::make_unique<MultiExpr>(parameters);
+}
+
 ExpressionPtr Parser::parseExpression()
+{
+    return parseAssignment();
+}
+
+ExpressionPtr Parser::parseParameter()
+{
+    // Check if the current token is a type
+    if (isType(peekToken().type))
+    {
+        Token typeToken = peekToken();
+        std::string type = typeToken.lexeme;
+        advanceToken(); // Consume the type token
+
+        ExpressionPtr initializer = parseAssignment();
+        if (!initializer)
+        {
+            error("Expected initializer expression", peekToken());
+            return nullptr;
+        }
+
+        return std::make_unique<ParameterExpr>(type, std::move(initializer));
+    }
+
+    error("Expected type in parameter declaration", peekToken());
+    return nullptr;
+}
+
+ExpressionPtr Parser::parseAssignment()
 {
     auto startPos = current;
     auto expr = parsePrimary();
     if (match(TokenType::Equals))
     {
         Token equals = previousToken();
-        auto value = parseExpression();
+        auto value = parseEquality();
         if (!value)
         {
             error("Expected value after '='", equals);

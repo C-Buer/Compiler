@@ -41,12 +41,12 @@ class Parser
     std::unique_ptr<WhileStatement> parseWhileStatement();
     std::unique_ptr<Expression> parseMultiExpr();
     std::unique_ptr<Expression> parseExpression();
-    std::unique_ptr<Expression> parseAssignment();
     std::unique_ptr<Expression> parseEquality();
     std::unique_ptr<Expression> parseComparison();
     std::unique_ptr<Expression> parseTerm();
     std::unique_ptr<Expression> parseFactor();
     std::unique_ptr<Expression> parseUnaryBack();
+    std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parseUnaryFront();
     std::unique_ptr<Expression> parsePrimary();
     std::unique_ptr<Block> parseBlock();

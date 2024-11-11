@@ -109,7 +109,7 @@ bool Parser::isAtEnd() const
 
 void Parser::error(const std::string &message, const Token &token)
 {
-    errorMsgList.push_back(std::format("Error at line {}, column{}, token '{}', error message:{}\n", token.line,
+    errorMsgList.push_back(std::format("Error at line {}, column{}, token '{}', error message: {}\n", token.line,
                                        token.column, token.lexeme, message));
 }
 
@@ -343,16 +343,12 @@ std::unique_ptr<Expression> Parser::parseMultiExpr()
 
 std::unique_ptr<Expression> Parser::parseExpression()
 {
-    return parseAssignment();
-}
-
-std::unique_ptr<Expression> Parser::parseAssignment()
-{
-    auto expr = parseEquality();
+    auto startPos = current;
+    auto expr = parsePrimary();
     if (match(TokenType::Equals))
     {
         Token equals = previousToken();
-        auto value = parseAssignment();
+        auto value = parseExpression();
         if (!value)
         {
             error("Expected value after '='", equals);
@@ -371,13 +367,53 @@ std::unique_ptr<Expression> Parser::parseAssignment()
             return nullptr;
         }
     }
+    if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
+        !check(TokenType::Semicolon))
+    {
+        current = startPos;
+        if (!expr)
+        {
+            errorMsgList.pop_back();
+        }
+        expr = parseEquality();
+    }
     return expr;
 }
 
 std::unique_ptr<Expression> Parser::parseEquality()
 {
-    auto expr = parseComparison();
+    auto startPos = current;
+    auto expr = parsePrimary();
     while (match(TokenType::DoubleEquals) || match(TokenType::NotEquals))
+    {
+        Token oper = previousToken();
+        auto right = parseEquality();
+        if (!right)
+        {
+            error("Expected expression after comparison operator", oper);
+            return nullptr;
+        }
+        expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
+    }
+    if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
+        !check(TokenType::Semicolon))
+    {
+        current = startPos;
+        if (!expr)
+        {
+            errorMsgList.pop_back();
+        }
+        expr = parseComparison();
+    }
+    return expr;
+}
+
+std::unique_ptr<Expression> Parser::parseComparison()
+{
+    auto startPos = current;
+    auto expr = parsePrimary();
+    while (match(TokenType::Less) || match(TokenType::LessEquals) || match(TokenType::Greater) ||
+           match(TokenType::GreaterEquals))
     {
         Token oper = previousToken();
         auto right = parseComparison();
@@ -388,23 +424,15 @@ std::unique_ptr<Expression> Parser::parseEquality()
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
     }
-    return expr;
-}
-
-std::unique_ptr<Expression> Parser::parseComparison()
-{
-    auto expr = parseTerm();
-    while (match(TokenType::Less) || match(TokenType::LessEquals) || match(TokenType::Greater) ||
-           match(TokenType::GreaterEquals))
+    if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
+        !check(TokenType::Semicolon))
     {
-        Token oper = previousToken();
-        auto right = parseTerm();
-        if (!right)
+        current = startPos;
+        if (!expr)
         {
-            error("Expected expression after comparison operator", oper);
-            return nullptr;
+            errorMsgList.pop_back();
         }
-        expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
+        expr = parseTerm();
     }
     return expr;
 }
@@ -415,7 +443,7 @@ std::unique_ptr<Expression> Parser::parseTerm()
     while (match(TokenType::Plus) || match(TokenType::Minus))
     {
         Token oper = previousToken();
-        auto right = parseFactor();
+        auto right = parseTerm();
         if (!right)
         {
             error("Expected expression after operator", oper);
@@ -432,7 +460,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
     while (match(TokenType::Star) || match(TokenType::Slash) || match(TokenType::Percent))
     {
         Token oper = previousToken();
-        auto right = parseUnaryBack();
+        auto right = parseFactor();
         if (!right)
         {
             error("Expected expression after operator", oper);
@@ -445,23 +473,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
 
 std::unique_ptr<Expression> Parser::parseUnaryBack()
 {
-    auto expr = parseUnaryFront();
-    if (match(TokenType::Scope))
-    {
-        if (!expr)
-        {
-            error("Expected name expression before scope", previousToken());
-            return nullptr;
-        }
-        auto member = parseUnaryBack();
-        if (!member)
-        {
-            error("Expected member expression after scope", previousToken());
-            return nullptr;
-        }
-        // For simplicity, treat unary as binary with left operand as null
-        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
-    }
+    auto expr = parseMemberAccess();
     while (match(TokenType::Increment) || match(TokenType::Decrement))
     {
         Token oper = previousToken();
@@ -472,6 +484,28 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
         }
         // For simplicity, treat unary as binary with left operand as null
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
+    }
+    return expr;
+}
+
+std::unique_ptr<Expression> Parser::parseMemberAccess()
+{
+    auto expr = parseUnaryFront();
+    if (match(TokenType::Scope))
+    {
+        if (!expr)
+        {
+            error("Expected name expression before scope", previousToken());
+            return nullptr;
+        }
+        auto member = parseMemberAccess();
+        if (!member)
+        {
+            error("Expected member expression after scope", previousToken());
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
     }
     if (match(TokenType::LeftParen))
     {

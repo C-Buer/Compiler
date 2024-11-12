@@ -1,7 +1,5 @@
 // test.cbuer
 
-struct test;
-
 struct test
 {
     int a;

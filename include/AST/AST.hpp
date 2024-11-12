@@ -23,6 +23,7 @@ struct ExpressionStatement;
 struct Expression;
 struct Literal;
 struct IdentifierExpr;
+struct BasicTypeExpr;
 struct NamespaceExpr;
 struct AssignmentExpr;
 struct ParameterExpr;
@@ -49,6 +50,7 @@ struct ASTVisitor
     virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;
+    virtual void visit(BasicTypeExpr *node) = 0;
     virtual void visit(NamespaceExpr *node) = 0;
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(ParameterExpr *node) = 0;
@@ -90,6 +92,30 @@ struct IdentifierExpr : Expression
     void accept(ASTVisitor *visitor) override;
 };
 
+struct BasicTypeExpr : Expression
+{
+    enum BasicType
+    {
+        Float,
+        Double,
+        Char,
+        Bool,
+        Void,
+        Int64,
+        Int32,
+        Int16,
+        Int8,
+        UInt64,
+        UInt32,
+        UInt16,
+        UInt8
+    } type;
+
+    BasicTypeExpr(BasicType t);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
 struct NamespaceExpr : Expression
 {
     std::unique_ptr<Expression> name;
@@ -112,10 +138,10 @@ struct AssignmentExpr : Expression
 
 struct ParameterExpr : Expression
 {
-    std::string type;
+    std::unique_ptr<Expression> type;
     std::unique_ptr<Expression> right;
 
-    ParameterExpr(const std::string &t, std::unique_ptr<Expression> r);
+    ParameterExpr(std::unique_ptr<Expression> t, std::unique_ptr<Expression> r);
 
     void accept(ASTVisitor *visitor) override;
 };

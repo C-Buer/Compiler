@@ -3,6 +3,7 @@
 
 #include "AST/AST.hpp"
 #include "Lexer/Lexer.hpp"
+#include "Lexer/Token.hpp"
 #include <format>
 #include <iostream>
 #include <list>
@@ -61,5 +62,7 @@ class Parser
     bool isBaseType(TokenType type) const;
     bool isType(TokenType type) const;
 };
+
+BasicTypeExpr::BasicType TokenToBasic(TokenType token);
 
 #endif // PARSER_HPP

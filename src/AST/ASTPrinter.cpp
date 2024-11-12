@@ -224,6 +224,56 @@ void ASTPrinter::visit(IdentifierExpr *node)
     std::cout << node->name;
 }
 
+// Visit method for the BasicTypeExpr node
+void ASTPrinter::visit(BasicTypeExpr *node)
+{
+    switch (node->type)
+    {
+    case BasicTypeExpr::Float:
+        std::cout << "float";
+        break;
+    case BasicTypeExpr::Double:
+        std::cout << "double";
+        break;
+    case BasicTypeExpr::Char:
+        std::cout << "char";
+        break;
+    case BasicTypeExpr::Bool:
+        std::cout << "bool";
+        break;
+    case BasicTypeExpr::Void:
+        std::cout << "void";
+        break;
+    case BasicTypeExpr::Int64:
+        std::cout << "int64";
+        break;
+    case BasicTypeExpr::Int32:
+        std::cout << "int32";
+        break;
+    case BasicTypeExpr::Int16:
+        std::cout << "int16";
+        break;
+    case BasicTypeExpr::Int8:
+        std::cout << "int8";
+        break;
+    case BasicTypeExpr::UInt64:
+        std::cout << "uint64";
+        break;
+    case BasicTypeExpr::UInt32:
+        std::cout << "uint32";
+        break;
+    case BasicTypeExpr::UInt16:
+        std::cout << "uint16";
+        break;
+    case BasicTypeExpr::UInt8:
+        std::cout << "uint8";
+        break;
+    default:
+        std::cout << "void";
+        break;
+    }
+}
+
 // Visit method for the NamespaceExpr node
 void ASTPrinter::visit(NamespaceExpr *node)
 {
@@ -243,7 +293,8 @@ void ASTPrinter::visit(AssignmentExpr *node)
 // Visit method for the AssignmentExpr node
 void ASTPrinter::visit(ParameterExpr *node)
 {
-    std::cout << node->type << " ";
+    node->type->accept(this);
+    std::cout << " ";
     node->right->accept(this);
 }
 

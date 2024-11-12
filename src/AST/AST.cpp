@@ -1,4 +1,5 @@
 #include "AST/AST.hpp"
+#include "Lexer/Token.hpp"
 #include <utility>
 
 // Literal Implementations
@@ -17,6 +18,16 @@ IdentifierExpr::IdentifierExpr(const std::string &n) : name(n)
 }
 
 void IdentifierExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// BasicTypeExpr Implementations
+BasicTypeExpr::BasicTypeExpr(BasicType t) : type(t)
+{
+}
+
+void BasicTypeExpr::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
@@ -44,7 +55,8 @@ void AssignmentExpr::accept(ASTVisitor *visitor)
 }
 
 // ParameterExpr Implementations
-ParameterExpr::ParameterExpr(const std::string &t, std::unique_ptr<Expression> r) : type(t), right(std::move(r))
+ParameterExpr::ParameterExpr(std::unique_ptr<Expression> t, std::unique_ptr<Expression> r)
+    : type(std::move(t)), right(std::move(r))
 {
 }
 

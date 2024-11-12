@@ -1,7 +1,42 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
-#include <utility>
+#include <memory>
+
+BasicTypeExpr::BasicType TokenToBasic(TokenType token)
+{
+    switch (token)
+    {
+    case TokenType::Float:
+        return BasicTypeExpr::Float;
+    case TokenType::Double:
+        return BasicTypeExpr::Double;
+    case TokenType::Char:
+        return BasicTypeExpr::Char;
+    case TokenType::Bool:
+        return BasicTypeExpr::Bool;
+    case TokenType::Void:
+        return BasicTypeExpr::Void;
+    case TokenType::Int64:
+        return BasicTypeExpr::Int64;
+    case TokenType::Int32:
+        return BasicTypeExpr::Int32;
+    case TokenType::Int16:
+        return BasicTypeExpr::Int16;
+    case TokenType::Int8:
+        return BasicTypeExpr::Int8;
+    case TokenType::UInt64:
+        return BasicTypeExpr::UInt64;
+    case TokenType::UInt32:
+        return BasicTypeExpr::UInt32;
+    case TokenType::UInt16:
+        return BasicTypeExpr::UInt8;
+    case TokenType::UInt8:
+        return BasicTypeExpr::UInt8;
+    default:
+        return BasicTypeExpr::Void;
+    }
+}
 
 // Helper function to determine if a token is a base type
 bool Parser::isBaseType(TokenType type) const
@@ -616,9 +651,7 @@ std::unique_ptr<Expression> Parser::parseParameter()
     // Check if the current token is a type
     if (isType(peekToken().type))
     {
-        Token typeToken = peekToken();
-        std::string type = typeToken.lexeme;
-        advanceToken(); // Consume the type token
+        auto type = parseMemberAccess();
 
         std::unique_ptr<Expression> initializer = parseAssignment();
         if (!initializer)
@@ -627,7 +660,7 @@ std::unique_ptr<Expression> Parser::parseParameter()
             return nullptr;
         }
 
-        return std::make_unique<ParameterExpr>(type, std::move(initializer));
+        return std::make_unique<ParameterExpr>(std::move(type), std::move(initializer));
     }
 
     error("Expected type in parameter declaration", peekToken());
@@ -894,6 +927,10 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     {
         return std::make_unique<IdentifierExpr>(previousToken().lexeme);
     }
+    if (isBaseType(peekToken().type))
+    {
+        return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
+    }
     if (match(TokenType::LeftParen))
     {
         auto expr = parseExpression();
@@ -905,6 +942,6 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         return expr;
     }
 
-    error("Expected expression", peekToken());
+    error("Expected primary expression", peekToken());
     return nullptr;
 }

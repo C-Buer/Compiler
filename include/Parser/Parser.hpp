@@ -37,6 +37,7 @@ class Parser
     std::unique_ptr<Statement> parseVariableStatement();
     std::unique_ptr<Statement> parseStructStatement();
     std::unique_ptr<Statement> parseFunctionStatement();
+    std::unique_ptr<Statement> parseBlock();
     std::unique_ptr<Statement> parseReturnStatement();
     std::unique_ptr<Statement> parseIfStatement();
     std::unique_ptr<Statement> parseForStatement();
@@ -53,10 +54,9 @@ class Parser
     std::unique_ptr<Expression> parseTerm();
     std::unique_ptr<Expression> parseFactor();
     std::unique_ptr<Expression> parseUnaryBack();
-    std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parseUnaryFront();
+    std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parsePrimary();
-    std::unique_ptr<Statement> parseBlock();
 
     // Helper function to check if a token is a type
     bool isBaseType(TokenType type) const;

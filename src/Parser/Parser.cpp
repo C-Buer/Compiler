@@ -1,7 +1,6 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
-#include <memory>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
 {
@@ -670,7 +669,7 @@ std::unique_ptr<Expression> Parser::parseParameter()
 std::unique_ptr<Expression> Parser::parseAssignment()
 {
     auto startPos = current;
-    auto expr = parsePrimary();
+    auto expr = parseMemberAccess();
     if (match(TokenType::Equals))
     {
         Token equals = previousToken();
@@ -709,7 +708,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
 std::unique_ptr<Expression> Parser::parseEquality()
 {
     auto startPos = current;
-    auto expr = parsePrimary();
+    auto expr = parseMemberAccess();
     while (match(TokenType::DoubleEquals) || match(TokenType::NotEquals))
     {
         Token oper = previousToken();
@@ -737,7 +736,7 @@ std::unique_ptr<Expression> Parser::parseEquality()
 std::unique_ptr<Expression> Parser::parseComparison()
 {
     auto startPos = current;
-    auto expr = parsePrimary();
+    auto expr = parseMemberAccess();
     while (match(TokenType::Less) || match(TokenType::LessEquals) || match(TokenType::Greater) ||
            match(TokenType::GreaterEquals))
     {
@@ -765,7 +764,8 @@ std::unique_ptr<Expression> Parser::parseComparison()
 
 std::unique_ptr<Expression> Parser::parseTerm()
 {
-    auto expr = parseFactor();
+    auto startPos = current;
+    auto expr = parseMemberAccess();
     while (match(TokenType::Plus) || match(TokenType::Minus))
     {
         Token oper = previousToken();
@@ -776,6 +776,16 @@ std::unique_ptr<Expression> Parser::parseTerm()
             return nullptr;
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
+    }
+    if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
+        !check(TokenType::Semicolon))
+    {
+        current = startPos;
+        if (!expr)
+        {
+            errorMsgList.pop_back();
+        }
+        expr = parseFactor();
     }
     return expr;
 }
@@ -799,7 +809,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
 
 std::unique_ptr<Expression> Parser::parseUnaryBack()
 {
-    auto expr = parseMemberAccess();
+    auto expr = parseUnaryFront();
     while (match(TokenType::Increment) || match(TokenType::Decrement))
     {
         Token oper = previousToken();
@@ -814,9 +824,26 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
     return expr;
 }
 
+std::unique_ptr<Expression> Parser::parseUnaryFront()
+{
+    while (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
+    {
+        Token oper = previousToken();
+        auto right = parseUnaryFront();
+        if (!right)
+        {
+            error("Expected expression after unary operator", oper);
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
+    }
+    return parseMemberAccess();
+}
+
 std::unique_ptr<Expression> Parser::parseMemberAccess()
 {
-    auto expr = parseUnaryFront();
+    auto expr = parsePrimary();
     if (match(TokenType::Scope))
     {
         if (!expr)
@@ -864,23 +891,6 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
         return std::make_unique<SubscriptExpr>(std::move(expr), std::move(parameters));
     }
     return expr;
-}
-
-std::unique_ptr<Expression> Parser::parseUnaryFront()
-{
-    if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
-    {
-        Token oper = previousToken();
-        auto right = parseUnaryFront();
-        if (!right)
-        {
-            error("Expected expression after unary operator", oper);
-            return nullptr;
-        }
-        // For simplicity, treat unary as binary with left operand as null
-        return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
-    }
-    return parsePrimary();
 }
 
 std::unique_ptr<Expression> Parser::parsePrimary()

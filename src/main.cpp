@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     std::unique_ptr<Program> program = parser.parse();
 
     // Uncomment the following lines to test parser speed
-    /*
+    //*
     for (int i = 0; i < 1'000'000'000; i++)
         parser.parse();
     //*/
@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
     {
         std::cout << "Parsing completed successfully.\n";
     }
-
     std::cout << "Parse time: " << durationParser.count() << " us\n";
 
     return 0;

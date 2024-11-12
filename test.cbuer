@@ -29,6 +29,6 @@ int main(int argc, char argv) {
     while (z < 100) {
         z = z * 2;
     }
-    main(x, c[1]);
+    main(x, local::get_c()[1]);
     return 0;
 }

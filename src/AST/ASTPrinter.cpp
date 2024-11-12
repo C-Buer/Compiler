@@ -32,7 +32,9 @@ void ASTPrinter::visit(Program *node)
 void ASTPrinter::visit(VariableDefinition *node)
 {
     printIndent();
-    std::cout << "VariableDefinition: " << node->type << " ";
+    std::cout << "VariableDefinition: ";
+    node->type->accept(this);
+    std::cout << " ";
     node->initializer->accept(this);
     std::cout << ";\n";
 }
@@ -41,7 +43,9 @@ void ASTPrinter::visit(VariableDefinition *node)
 void ASTPrinter::visit(StructDefinition *node)
 {
     printIndent();
-    std::cout << "StructDefinition: " << node->type << "\n";
+    std::cout << "StructDefinition: ";
+    node->type->accept(this);
+    std::cout << "\n";
     node->body->accept(this);
 }
 
@@ -49,7 +53,9 @@ void ASTPrinter::visit(StructDefinition *node)
 void ASTPrinter::visit(FunctionDeclaration *node)
 {
     printIndent();
-    std::cout << "FunctionDeclaration: " << node->returnType << " " << node->name << "(";
+    std::cout << "FunctionDeclaration: ";
+    node->returnType->accept(this);
+    std::cout << " " << node->name << "(";
     node->parameters->accept(this);
     std::cout << ");\n";
 }
@@ -58,7 +64,8 @@ void ASTPrinter::visit(FunctionDeclaration *node)
 void ASTPrinter::visit(FunctionDefinition *node)
 {
     printIndent();
-    std::cout << "FunctionDefinition: " << node->returnType << " " << node->name << "(";
+    node->returnType->accept(this);
+    std::cout << " " << node->name << "(";
     node->parameters->accept(this);
     std::cout << ")\n";
     node->body->accept(this);

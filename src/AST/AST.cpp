@@ -110,8 +110,8 @@ void MultiExpr::accept(ASTVisitor *visitor)
 }
 
 // VariableDefinition Implementations
-VariableDefinition::VariableDefinition(const std::string &t, std::unique_ptr<Expression> init)
-    : type(t), initializer(std::move(init))
+VariableDefinition::VariableDefinition(std::unique_ptr<Expression> t, std::unique_ptr<Expression> init)
+    : type(std::move(t)), initializer(std::move(init))
 {
 }
 
@@ -121,7 +121,8 @@ void VariableDefinition::accept(ASTVisitor *visitor)
 }
 
 // StructDefinition Implementations
-StructDefinition::StructDefinition(const std::string &t, std::unique_ptr<Statement> b) : type(t), body(std::move(b))
+StructDefinition::StructDefinition(std::unique_ptr<Expression> t, std::unique_ptr<Statement> b)
+    : type(std::move(t)), body(std::move(b))
 {
 }
 
@@ -131,9 +132,9 @@ void StructDefinition::accept(ASTVisitor *visitor)
 }
 
 // FunctionDeclaration Implementations
-FunctionDeclaration::FunctionDeclaration(const std::string &retType, const std::string &n,
+FunctionDeclaration::FunctionDeclaration(std::unique_ptr<Expression> retType, const std::string &n,
                                          std::unique_ptr<Expression> params)
-    : returnType(retType), name(n), parameters(std::move(params))
+    : returnType(std::move(retType)), name(n), parameters(std::move(params))
 {
 }
 
@@ -143,9 +144,9 @@ void FunctionDeclaration::accept(ASTVisitor *visitor)
 }
 
 // FunctionDefinition Implementations
-FunctionDefinition::FunctionDefinition(const std::string &retType, const std::string &n,
+FunctionDefinition::FunctionDefinition(std::unique_ptr<Expression> retType, const std::string &n,
                                        std::unique_ptr<Expression> params, std::unique_ptr<Statement> b)
-    : returnType(retType), name(n), parameters(std::move(params)), body(std::move(b))
+    : returnType(std::move(retType)), name(n), parameters(std::move(params)), body(std::move(b))
 {
 }
 

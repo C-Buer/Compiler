@@ -195,10 +195,10 @@ struct Statement : ASTNode
 // Variable Declaration Node
 struct VariableDefinition : Statement
 {
-    std::string type;
+    std::unique_ptr<Expression> type;
     std::unique_ptr<Expression> initializer;
 
-    VariableDefinition(const std::string &t, std::unique_ptr<Expression> init = nullptr);
+    VariableDefinition(std::unique_ptr<Expression> t, std::unique_ptr<Expression> init = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -206,10 +206,10 @@ struct VariableDefinition : Statement
 // Struct Declaration Node
 struct StructDefinition : Statement
 {
-    std::string type;
+    std::unique_ptr<Expression> type;
     std::unique_ptr<Statement> body;
 
-    StructDefinition(const std::string &t, std::unique_ptr<Statement> b = nullptr);
+    StructDefinition(std::unique_ptr<Expression>, std::unique_ptr<Statement> b = nullptr);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -217,11 +217,11 @@ struct StructDefinition : Statement
 // Function Declaration Node
 struct FunctionDeclaration : Statement
 {
-    std::string returnType;
+    std::unique_ptr<Expression> returnType;
     std::string name;
     std::unique_ptr<Expression> parameters;
 
-    FunctionDeclaration(const std::string &retType, const std::string &n, std::unique_ptr<Expression> params);
+    FunctionDeclaration(std::unique_ptr<Expression> retType, const std::string &n, std::unique_ptr<Expression> params);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -229,12 +229,12 @@ struct FunctionDeclaration : Statement
 // Function Definition Node
 struct FunctionDefinition : Statement
 {
-    std::string returnType;
+    std::unique_ptr<Expression> returnType;
     std::string name;
     std::unique_ptr<Expression> parameters;
     std::unique_ptr<Statement> body;
 
-    FunctionDefinition(const std::string &retType, const std::string &n, std::unique_ptr<Expression> params,
+    FunctionDefinition(std::unique_ptr<Expression> retType, const std::string &n, std::unique_ptr<Expression> params,
                        std::unique_ptr<Statement> b);
 
     void accept(ASTVisitor *visitor) override;

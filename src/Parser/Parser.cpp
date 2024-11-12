@@ -215,9 +215,7 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
     // Check if the current token is a type
     if (isType(peekToken().type))
     {
-        Token typeToken = peekToken();
-        std::string type = typeToken.lexeme;
-        advanceToken(); // Consume the type token
+        auto type = parseMemberAccess();
 
         std::unique_ptr<Expression> initializer = parseAssignExpr();
         if (!initializer)
@@ -232,7 +230,7 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
             return nullptr;
         }
 
-        return std::make_unique<VariableDefinition>(type, std::move(initializer));
+        return std::make_unique<VariableDefinition>(std::move(type), std::move(initializer));
     }
 
     error("Expected type in variable declaration", peekToken());
@@ -241,10 +239,8 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
 
 std::unique_ptr<Statement> Parser::parseStructStatement()
 {
-    // Check if the current token is a type
-    Token typeToken = peekToken();
-    std::string type = typeToken.lexeme;
-    advanceToken(); // Consume the type token
+    auto type = parseMemberAccess();
+
     if (!match(TokenType::LeftBrace))
     {
         error("Expected '{' to start struct body", peekToken());
@@ -256,7 +252,7 @@ std::unique_ptr<Statement> Parser::parseStructStatement()
         error("Expected body after struct declare", peekToken());
         return nullptr;
     }
-    return std::make_unique<StructDefinition>(type, std::move(body));
+    return std::make_unique<StructDefinition>(std::move(type), std::move(body));
 }
 
 std::unique_ptr<Statement> Parser::parseFunctionStatement()
@@ -268,9 +264,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
         return nullptr;
     }
 
-    Token typeToken = peekToken();
-    std::string returnType = typeToken.lexeme;
-    advanceToken(); // Consume return type
+    auto returnType = parseMemberAccess();
 
     if (!check(TokenType::Identifier))
     {
@@ -299,7 +293,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
 
     if (match(TokenType::Semicolon))
     {
-        return std::make_unique<FunctionDeclaration>(returnType, name, std::move(parameters));
+        return std::make_unique<FunctionDeclaration>(std::move(returnType), name, std::move(parameters));
     }
 
     // Parse function body (block)
@@ -316,7 +310,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
         return nullptr;
     }
 
-    return std::make_unique<FunctionDefinition>(returnType, name, std::move(parameters), std::move(body));
+    return std::make_unique<FunctionDefinition>(std::move(returnType), name, std::move(parameters), std::move(body));
 }
 
 std::unique_ptr<Statement> Parser::parseBlock()
@@ -838,7 +832,29 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
         // For simplicity, treat unary as binary with left operand as null
         return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
     }
-    return parseMemberAccess();
+    return parseSubsript();
+}
+
+std::unique_ptr<Expression> Parser::parseSubsript()
+{
+    auto expr = parseMemberAccess();
+    while (match(TokenType::LeftBracket))
+    {
+
+        if (!expr)
+        {
+            error("Expected expression before subscript", previousToken());
+            return nullptr;
+        }
+        std::unique_ptr<Expression> parameters = parseMultiExpr();
+        if (!match(TokenType::RightBracket))
+        {
+            error("Expected ']' after subscript", peekToken());
+            return nullptr;
+        }
+        expr = std::make_unique<SubscriptExpr>(std::move(expr), std::move(parameters));
+    }
+    return expr;
 }
 
 std::unique_ptr<Expression> Parser::parseMemberAccess()
@@ -874,21 +890,6 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
             return nullptr;
         }
         return std::make_unique<FunctionCallExpr>(std::move(expr), std::move(parameters));
-    }
-    if (match(TokenType::LeftBracket))
-    {
-        if (!expr)
-        {
-            error("Expected expression before subscript", previousToken());
-            return nullptr;
-        }
-        std::unique_ptr<Expression> parameters = parseMultiExpr();
-        if (!match(TokenType::RightBracket))
-        {
-            error("Expected ']' after subscript", peekToken());
-            return nullptr;
-        }
-        return std::make_unique<SubscriptExpr>(std::move(expr), std::move(parameters));
     }
     return expr;
 }

@@ -55,6 +55,7 @@ class Parser
     std::unique_ptr<Expression> parseFactor();
     std::unique_ptr<Expression> parseUnaryBack();
     std::unique_ptr<Expression> parseUnaryFront();
+    std::unique_ptr<Expression> parseSubsript();
     std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parsePrimary();
 

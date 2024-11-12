@@ -6,7 +6,7 @@ struct test
     float b;
 }
 
-ptr malloc();
+global::ptr malloc();
 
 int main(int argc, char argv) {
     int64 x = 10;

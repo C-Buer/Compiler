@@ -56,8 +56,10 @@ class Parser
     std::unique_ptr<Expression> parseUnaryBack();
     std::unique_ptr<Expression> parseUnaryFront();
     std::unique_ptr<Expression> parseSubsript();
+    std::unique_ptr<Expression> parseFunctionCall();
     std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parsePrimary();
+    std::unique_ptr<Expression> parseConstant();
 
     // Helper function to check if a token is a type
     bool isBaseType(TokenType type) const;

@@ -1,6 +1,8 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
+#include "AST/ASTPrinter.hpp"
 #include "Lexer/Token.hpp"
+#include <string>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
 {
@@ -173,13 +175,11 @@ std::unique_ptr<Statement> Parser::parseStatement()
     if (isType(peekToken().type))
     {
         // Look ahead to determine if it's a function or variable declaration
-        size_t save = current;
-        Token typeToken = peekToken();
-        advanceToken(); // Consume type
+        auto save = current;
+        auto type = parseMemberAccess();
 
         if (check(TokenType::Identifier))
         {
-            Token nameToken = peekToken();
             advanceToken(); // Consume identifier
 
             if (check(TokenType::LeftParen))
@@ -213,58 +213,62 @@ std::unique_ptr<Statement> Parser::parseStatement()
 std::unique_ptr<Statement> Parser::parseVariableStatement()
 {
     // Check if the current token is a type
-    if (isType(peekToken().type))
+    auto type = parseMemberAccess();
+    if (!type)
     {
-        auto type = parseMemberAccess();
-
-        std::unique_ptr<Expression> initializer = parseAssignExpr();
-        if (!initializer)
-        {
-            error("Expected initializer expression", peekToken());
-            return nullptr;
-        }
-
-        if (!match(TokenType::Semicolon))
-        {
-            error("Expected ';' after variable declaration", peekToken());
-            return nullptr;
-        }
-
-        return std::make_unique<VariableDefinition>(std::move(type), std::move(initializer));
+        error("Expected type in variable declaration", peekToken());
+        return nullptr;
     }
 
-    error("Expected type in variable declaration", peekToken());
-    return nullptr;
+    std::unique_ptr<Expression> initializer = parseAssignExpr();
+    if (!initializer)
+    {
+        error("Expected initializer expression", peekToken());
+        return nullptr;
+    }
+    if (!match(TokenType::Semicolon))
+    {
+        error("Expected ';' after variable declaration", peekToken());
+        return nullptr;
+    }
+    return std::make_unique<VariableDefinition>(std::move(type), std::move(initializer));
 }
 
 std::unique_ptr<Statement> Parser::parseStructStatement()
 {
     auto type = parseMemberAccess();
+    if (!type)
+    {
+        error("Expected type name in struct declaration", peekToken());
+        return nullptr;
+    }
 
     if (!match(TokenType::LeftBrace))
     {
         error("Expected '{' to start struct body", peekToken());
         return nullptr;
     }
+
     std::unique_ptr<Statement> body = parseBlock();
+
     if (!body)
     {
         error("Expected body after struct declare", peekToken());
         return nullptr;
     }
+
     return std::make_unique<StructDefinition>(std::move(type), std::move(body));
 }
 
 std::unique_ptr<Statement> Parser::parseFunctionStatement()
 {
     // Assume the current token is a type
-    if (!isType(peekToken().type))
+    auto returnType = parseMemberAccess();
+    if (!returnType)
     {
         error("Expected return type for function", peekToken());
         return nullptr;
     }
-
-    auto returnType = parseMemberAccess();
 
     if (!check(TokenType::Identifier))
     {
@@ -664,6 +668,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
 {
     auto startPos = current;
     auto expr = parseMemberAccess();
+
     if (match(TokenType::Equals))
     {
         Token equals = previousToken();
@@ -686,6 +691,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
             return nullptr;
         }
     }
+
     if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
         !check(TokenType::Semicolon))
     {
@@ -703,10 +709,11 @@ std::unique_ptr<Expression> Parser::parseEquality()
 {
     auto startPos = current;
     auto expr = parseMemberAccess();
+
     while (match(TokenType::DoubleEquals) || match(TokenType::NotEquals))
     {
         Token oper = previousToken();
-        auto right = parseEquality();
+        auto right = parseComparison();
         if (!right)
         {
             error("Expected expression after comparison operator", oper);
@@ -714,6 +721,7 @@ std::unique_ptr<Expression> Parser::parseEquality()
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
     }
+
     if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
         !check(TokenType::Semicolon))
     {
@@ -731,11 +739,12 @@ std::unique_ptr<Expression> Parser::parseComparison()
 {
     auto startPos = current;
     auto expr = parseMemberAccess();
+
     while (match(TokenType::Less) || match(TokenType::LessEquals) || match(TokenType::Greater) ||
            match(TokenType::GreaterEquals))
     {
         Token oper = previousToken();
-        auto right = parseComparison();
+        auto right = parseTerm();
         if (!right)
         {
             error("Expected expression after comparison operator", oper);
@@ -743,6 +752,7 @@ std::unique_ptr<Expression> Parser::parseComparison()
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
     }
+
     if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
         !check(TokenType::Semicolon))
     {
@@ -760,10 +770,11 @@ std::unique_ptr<Expression> Parser::parseTerm()
 {
     auto startPos = current;
     auto expr = parseMemberAccess();
+
     while (match(TokenType::Plus) || match(TokenType::Minus))
     {
         Token oper = previousToken();
-        auto right = parseTerm();
+        auto right = parseFactor();
         if (!right)
         {
             error("Expected expression after operator", oper);
@@ -771,6 +782,7 @@ std::unique_ptr<Expression> Parser::parseTerm()
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
     }
+
     if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
         !check(TokenType::Semicolon))
     {
@@ -790,7 +802,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
     while (match(TokenType::Star) || match(TokenType::Slash) || match(TokenType::Percent))
     {
         Token oper = previousToken();
-        auto right = parseFactor();
+        auto right = parseUnaryBack();
         if (!right)
         {
             error("Expected expression after operator", oper);
@@ -820,7 +832,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
 
 std::unique_ptr<Expression> Parser::parseUnaryFront()
 {
-    while (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
+    if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
     {
         Token oper = previousToken();
         auto right = parseUnaryFront();
@@ -837,7 +849,7 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
 
 std::unique_ptr<Expression> Parser::parseSubsript()
 {
-    auto expr = parseMemberAccess();
+    auto expr = parseFunctionCall();
     while (match(TokenType::LeftBracket))
     {
 
@@ -857,25 +869,9 @@ std::unique_ptr<Expression> Parser::parseSubsript()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseMemberAccess()
+std::unique_ptr<Expression> Parser::parseFunctionCall()
 {
-    auto expr = parsePrimary();
-    if (match(TokenType::Scope))
-    {
-        if (!expr)
-        {
-            error("Expected name expression before scope", previousToken());
-            return nullptr;
-        }
-        auto member = parseMemberAccess();
-        if (!member)
-        {
-            error("Expected member expression after scope", previousToken());
-            return nullptr;
-        }
-        // For simplicity, treat unary as binary with left operand as null
-        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
-    }
+    auto expr = parseMemberAccess();
     if (match(TokenType::LeftParen))
     {
         if (!expr)
@@ -894,7 +890,52 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
     return expr;
 }
 
+std::unique_ptr<Expression> Parser::parseMemberAccess()
+{
+    auto expr = parsePrimary();
+    while (match(TokenType::Scope))
+    {
+        if (!expr)
+        {
+            error("Expected name expression before scope", previousToken());
+            return nullptr;
+        }
+        auto member = parsePrimary();
+        if (!member)
+        {
+            error("Expected member expression after scope", previousToken());
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
+    }
+    return expr;
+}
+
 std::unique_ptr<Expression> Parser::parsePrimary()
+{
+    if (match(TokenType::Identifier))
+    {
+        return std::make_unique<IdentifierExpr>(previousToken().lexeme);
+    }
+    if (isBaseType(peekToken().type))
+    {
+        return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
+    }
+    if (match(TokenType::LeftParen))
+    {
+        auto expr = parseExpression();
+        if (!match(TokenType::RightParen))
+        {
+            error("Expected ')' after expression", peekToken());
+            return nullptr;
+        }
+        return expr;
+    }
+    return parseConstant();
+}
+
+std::unique_ptr<Expression> Parser::parseConstant()
 {
     if (match(TokenType::IntegerLiteral))
     {
@@ -934,25 +975,6 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     {
         return std::make_unique<Literal>(previousToken().lexeme == "true");
     }
-    if (match(TokenType::Identifier))
-    {
-        return std::make_unique<IdentifierExpr>(previousToken().lexeme);
-    }
-    if (isBaseType(peekToken().type))
-    {
-        return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
-    }
-    if (match(TokenType::LeftParen))
-    {
-        auto expr = parseExpression();
-        if (!match(TokenType::RightParen))
-        {
-            error("Expected ')' after expression", peekToken());
-            return nullptr;
-        }
-        return expr;
-    }
-
-    error("Expected primary expression", peekToken());
+    error("Expected constant", peekToken());
     return nullptr;
 }

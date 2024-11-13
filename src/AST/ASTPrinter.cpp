@@ -289,6 +289,21 @@ void ASTPrinter::visit(NamespaceExpr *node)
     node->member->accept(this);
 }
 
+// Visit method for the MemberAccessExpr node
+void ASTPrinter::visit(MemberAccessExpr *node)
+{
+    node->name->accept(this);
+    if (node->ptr)
+    {
+        std::cout << "->";
+    }
+    else
+    {
+        std::cout << ".";
+    }
+    node->member->accept(this);
+}
+
 // Visit method for the AssignmentExpr node
 void ASTPrinter::visit(AssignmentExpr *node)
 {

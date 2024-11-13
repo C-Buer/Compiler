@@ -42,6 +42,17 @@ void NamespaceExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// MemberAccessExpr Implementations
+MemberAccessExpr::MemberAccessExpr(bool p, std::unique_ptr<Expression> n, std::unique_ptr<Expression> m)
+    : ptr(p), name(std::move(n)), member(std::move(m))
+{
+}
+
+void MemberAccessExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // AssignmentExpr Implementations
 AssignmentExpr::AssignmentExpr(std::unique_ptr<Expression> l, std::unique_ptr<Expression> r)
     : left(std::move(l)), right(std::move(r))

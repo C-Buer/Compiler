@@ -25,6 +25,7 @@ struct Literal;
 struct IdentifierExpr;
 struct BasicTypeExpr;
 struct NamespaceExpr;
+struct MemberAccessExpr;
 struct AssignmentExpr;
 struct ParameterExpr;
 struct BinaryExpr;
@@ -52,6 +53,7 @@ struct ASTVisitor
     virtual void visit(IdentifierExpr *node) = 0;
     virtual void visit(BasicTypeExpr *node) = 0;
     virtual void visit(NamespaceExpr *node) = 0;
+    virtual void visit(MemberAccessExpr *node) = 0;
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(ParameterExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
@@ -122,6 +124,17 @@ struct NamespaceExpr : Expression
     std::unique_ptr<Expression> member;
 
     NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct MemberAccessExpr : Expression
+{
+    bool ptr;
+    std::unique_ptr<Expression> name;
+    std::unique_ptr<Expression> member;
+
+    MemberAccessExpr(bool ptr, std::unique_ptr<Expression> n, std::unique_ptr<Expression> m);
 
     void accept(ASTVisitor *visitor) override;
 };

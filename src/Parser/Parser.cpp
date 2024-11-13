@@ -1,7 +1,7 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
-#include "AST/ASTPrinter.hpp"
 #include "Lexer/Token.hpp"
+#include <memory>
 #include <string>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
@@ -146,6 +146,10 @@ bool Parser::isAtEnd() const
 
 void Parser::error(const std::string &message, const Token &token)
 {
+    if (disableError)
+    {
+        return;
+    }
     errorMsgList.push_back(std::format("Error at line {}, column{}, token '{}', error message: {}\n", token.line,
                                        token.column, token.lexeme, message));
 }
@@ -176,7 +180,9 @@ std::unique_ptr<Statement> Parser::parseStatement()
     {
         // Look ahead to determine if it's a function or variable declaration
         auto save = current;
-        auto type = parseMemberAccess();
+        disableError = true;
+        auto type = parsePrimary();
+        disableError = false;
 
         if (check(TokenType::Identifier))
         {
@@ -213,7 +219,7 @@ std::unique_ptr<Statement> Parser::parseStatement()
 std::unique_ptr<Statement> Parser::parseVariableStatement()
 {
     // Check if the current token is a type
-    auto type = parseMemberAccess();
+    auto type = parsePrimary();
     if (!type)
     {
         error("Expected type in variable declaration", peekToken());
@@ -236,7 +242,7 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
 
 std::unique_ptr<Statement> Parser::parseStructStatement()
 {
-    auto type = parseMemberAccess();
+    auto type = parsePrimary();
     if (!type)
     {
         error("Expected type name in struct declaration", peekToken());
@@ -263,7 +269,7 @@ std::unique_ptr<Statement> Parser::parseStructStatement()
 std::unique_ptr<Statement> Parser::parseFunctionStatement()
 {
     // Assume the current token is a type
-    auto returnType = parseMemberAccess();
+    auto returnType = parsePrimary();
     if (!returnType)
     {
         error("Expected return type for function", peekToken());
@@ -648,7 +654,7 @@ std::unique_ptr<Expression> Parser::parseParameter()
     // Check if the current token is a type
     if (isType(peekToken().type))
     {
-        auto type = parseMemberAccess();
+        auto type = parsePrimary();
 
         std::unique_ptr<Expression> initializer = parseAssignment();
         if (!initializer)
@@ -667,7 +673,9 @@ std::unique_ptr<Expression> Parser::parseParameter()
 std::unique_ptr<Expression> Parser::parseAssignment()
 {
     auto startPos = current;
+    disableError = true;
     auto expr = parseMemberAccess();
+    disableError = false;
 
     if (match(TokenType::Equals))
     {
@@ -708,7 +716,9 @@ std::unique_ptr<Expression> Parser::parseAssignment()
 std::unique_ptr<Expression> Parser::parseEquality()
 {
     auto startPos = current;
+    disableError = true;
     auto expr = parseMemberAccess();
+    disableError = false;
 
     while (match(TokenType::DoubleEquals) || match(TokenType::NotEquals))
     {
@@ -738,7 +748,9 @@ std::unique_ptr<Expression> Parser::parseEquality()
 std::unique_ptr<Expression> Parser::parseComparison()
 {
     auto startPos = current;
+    disableError = true;
     auto expr = parseMemberAccess();
+    disableError = false;
 
     while (match(TokenType::Less) || match(TokenType::LessEquals) || match(TokenType::Greater) ||
            match(TokenType::GreaterEquals))
@@ -769,7 +781,9 @@ std::unique_ptr<Expression> Parser::parseComparison()
 std::unique_ptr<Expression> Parser::parseTerm()
 {
     auto startPos = current;
-    auto expr = parseMemberAccess();
+    disableError = true;
+    auto expr = parsePrimary();
+    disableError = false;
 
     while (match(TokenType::Plus) || match(TokenType::Minus))
     {
@@ -798,7 +812,11 @@ std::unique_ptr<Expression> Parser::parseTerm()
 
 std::unique_ptr<Expression> Parser::parseFactor()
 {
-    auto expr = parseUnaryBack();
+    auto startPos = current;
+    disableError = true;
+    auto expr = parsePrimary();
+    disableError = false;
+
     while (match(TokenType::Star) || match(TokenType::Slash) || match(TokenType::Percent))
     {
         Token oper = previousToken();
@@ -809,6 +827,17 @@ std::unique_ptr<Expression> Parser::parseFactor()
             return nullptr;
         }
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), std::move(right));
+    }
+
+    if (!check(TokenType::RightParen) && !check(TokenType::RightBracket) && !check(TokenType::RightBrace) &&
+        !check(TokenType::Semicolon))
+    {
+        current = startPos;
+        if (!expr)
+        {
+            errorMsgList.pop_back();
+        }
+        expr = parseUnaryBack();
     }
     return expr;
 }
@@ -844,7 +873,47 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
         // For simplicity, treat unary as binary with left operand as null
         return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
     }
-    return parseSubsript();
+    return parseMemberAccess();
+}
+
+std::unique_ptr<Expression> Parser::parseMemberAccess()
+{
+    auto expr = parseSubsript();
+
+    if (match(TokenType::Dot))
+    {
+        if (!expr)
+        {
+            error("Expected name expression before dot member access", previousToken());
+            return nullptr;
+        }
+        auto member = parseSubsript();
+        if (!member)
+        {
+            error("Expected member expression after dot member access", previousToken());
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        expr = std::make_unique<MemberAccessExpr>(false, std::move(expr), std::move(member));
+    }
+
+    if (match(TokenType::Arrow))
+    {
+        if (!expr)
+        {
+            error("Expected name expression before arrow member access", previousToken());
+            return nullptr;
+        }
+        auto member = parseSubsript();
+        if (!member)
+        {
+            error("Expected member expression after arrow member access", previousToken());
+            return nullptr;
+        }
+        // For simplicity, treat unary as binary with left operand as null
+        expr = std::make_unique<MemberAccessExpr>(true, std::move(expr), std::move(member));
+    }
+    return expr;
 }
 
 std::unique_ptr<Expression> Parser::parseSubsript()
@@ -852,7 +921,6 @@ std::unique_ptr<Expression> Parser::parseSubsript()
     auto expr = parseFunctionCall();
     while (match(TokenType::LeftBracket))
     {
-
         if (!expr)
         {
             error("Expected expression before subscript", previousToken());
@@ -871,7 +939,7 @@ std::unique_ptr<Expression> Parser::parseSubsript()
 
 std::unique_ptr<Expression> Parser::parseFunctionCall()
 {
-    auto expr = parseMemberAccess();
+    auto expr = parsePrimary();
     if (match(TokenType::LeftParen))
     {
         if (!expr)
@@ -890,33 +958,23 @@ std::unique_ptr<Expression> Parser::parseFunctionCall()
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::parseMemberAccess()
-{
-    auto expr = parsePrimary();
-    while (match(TokenType::Scope))
-    {
-        if (!expr)
-        {
-            error("Expected name expression before scope", previousToken());
-            return nullptr;
-        }
-        auto member = parsePrimary();
-        if (!member)
-        {
-            error("Expected member expression after scope", previousToken());
-            return nullptr;
-        }
-        // For simplicity, treat unary as binary with left operand as null
-        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
-    }
-    return expr;
-}
-
 std::unique_ptr<Expression> Parser::parsePrimary()
 {
     if (match(TokenType::Identifier))
     {
-        return std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        std::unique_ptr<Expression> expr = std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        while (match(TokenType::Scope))
+        {
+            auto member = parseSubsript();
+            if (!member)
+            {
+                error("Expected member expression after scope", previousToken());
+                return nullptr;
+            }
+            // For simplicity, treat unary as binary with left operand as null
+            expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
+        }
+        return expr;
     }
     if (isBaseType(peekToken().type))
     {

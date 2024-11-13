@@ -22,6 +22,7 @@ class Parser
     size_t current = 0;
 
     std::list<std::string> errorMsgList;
+    bool disableError = false;
 
     // Utility functions
     bool match(TokenType type);

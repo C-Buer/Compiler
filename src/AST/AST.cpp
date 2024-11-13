@@ -1,5 +1,4 @@
 #include "AST/AST.hpp"
-#include "Lexer/Token.hpp"
 
 // Literal Implementations
 Literal::Literal(const std::variant<int64_t, double, std::string, char, bool> &val) : value(val)
@@ -174,12 +173,32 @@ void Block::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-// ReturnStatement Implementations
-ReturnStatement::ReturnStatement(std::unique_ptr<Expression> val) : value(std::move(val))
+// LabelStatement Implementations
+LabelStatement::LabelStatement(std::unique_ptr<Expression> n) : name(std::move(n))
 {
 }
 
-void ReturnStatement::accept(ASTVisitor *visitor)
+void LabelStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// LabelCaseStatement Implementations
+LabelCaseStatement::LabelCaseStatement(bool ic, std::unique_ptr<Statement> l) : isCase(ic), label(std::move(l))
+{
+}
+
+void LabelCaseStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// GotoStatement Implementations
+GotoStatement::GotoStatement(std::unique_ptr<Expression> n) : name(std::move(n))
+{
+}
+
+void GotoStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
@@ -215,6 +234,16 @@ WhileStatement::WhileStatement(std::unique_ptr<Expression> cond, std::unique_ptr
 }
 
 void WhileStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// ReturnStatement Implementations
+ReturnStatement::ReturnStatement(std::unique_ptr<Expression> val) : value(std::move(val))
+{
+}
+
+void ReturnStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }

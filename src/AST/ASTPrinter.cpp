@@ -86,15 +86,35 @@ void ASTPrinter::visit(Block *node)
     std::cout << "}\n";
 }
 
-// Visit method for the ReturnStatement node
-void ASTPrinter::visit(ReturnStatement *node)
+// Visit method for the LabelStatement node
+void ASTPrinter::visit(LabelStatement *node)
 {
     printIndent();
-    std::cout << "ReturnStatement: ";
-    if (node->value)
+    node->name->accept(this);
+    std::cout << ": \n";
+}
+
+// Visit method for the LabelCaseStatement node
+void ASTPrinter::visit(LabelCaseStatement *node)
+{
+    printIndent();
+    if (node->isCase)
     {
-        node->value->accept(this);
+        std::cout << "case ";
     }
+    else
+    {
+        std::cout << "label ";
+    }
+    node->label->accept(this);
+}
+
+// Visit method for the GotolStatement node
+void ASTPrinter::visit(GotoStatement *node)
+{
+    printIndent();
+    std::cout << "goto ";
+    node->name->accept(this);
     std::cout << ";\n";
 }
 
@@ -189,6 +209,18 @@ void ASTPrinter::visit(WhileStatement *node)
     node->body->accept(this);
 
     indentLevel--;
+}
+
+// Visit method for the ReturnStatement node
+void ASTPrinter::visit(ReturnStatement *node)
+{
+    printIndent();
+    std::cout << "ReturnStatement: ";
+    if (node->value)
+    {
+        node->value->accept(this);
+    }
+    std::cout << ";\n";
 }
 
 // Visit method for the ExpressionStatement node

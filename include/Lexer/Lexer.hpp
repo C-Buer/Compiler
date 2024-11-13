@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 class Lexer
 {
   public:
@@ -32,17 +31,21 @@ class Lexer
                                                            {"for", TokenType::For},
                                                            {"while", TokenType::While},
                                                            {"return", TokenType::Return},
+                                                           {"label", TokenType::Label},
+                                                           {"case", TokenType::Case},
+                                                           {"goto", TokenType::Goto},
                                                            {"match", TokenType::Match},
                                                            {"import", TokenType::Import},
                                                            {"namespace", TokenType::Namespace},
                                                            {"true", TokenType::True},
                                                            {"false", TokenType::False},
                                                            // Primitive Types
-                                                           {"float", TokenType::Float},
-                                                           {"double", TokenType::Double},
+                                                           {"string", TokenType::String},
                                                            {"char", TokenType::Char},
                                                            {"bool", TokenType::Bool},
                                                            {"void", TokenType::Void},
+                                                           {"float", TokenType::Float},
+                                                           {"double", TokenType::Double},
                                                            {"int64", TokenType::Int64},
                                                            {"int32", TokenType::Int32},
                                                            {"int16", TokenType::Int16},

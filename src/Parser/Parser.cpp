@@ -44,11 +44,12 @@ bool Parser::isBaseType(TokenType type) const
 {
     switch (type)
     {
-    case TokenType::Float:
-    case TokenType::Double:
+    case TokenType::String:
     case TokenType::Char:
     case TokenType::Bool:
     case TokenType::Void:
+    case TokenType::Float:
+    case TokenType::Double:
     case TokenType::Int64:
     case TokenType::Int32:
     case TokenType::Int16:
@@ -156,26 +157,6 @@ void Parser::error(const std::string &message, const Token &token)
 
 std::unique_ptr<Statement> Parser::parseStatement()
 {
-    if (match(TokenType::If))
-    {
-        return parseIfStatement();
-    }
-    if (match(TokenType::For))
-    {
-        return parseForStatement();
-    }
-    if (match(TokenType::While))
-    {
-        return parseWhileStatement();
-    }
-    if (match(TokenType::Return))
-    {
-        return parseReturnStatement();
-    }
-    if (match(TokenType::Struct))
-    {
-        return parseStructStatement();
-    }
     if (isType(peekToken().type))
     {
         // Look ahead to determine if it's a function or variable declaration
@@ -201,19 +182,40 @@ std::unique_ptr<Statement> Parser::parseStatement()
                 return parseVariableStatement();
             }
         }
-        else
-        {
-            current = save;
-            return parseExpressionStatement();
-        }
-    }
-    else
-    {
+        current = save;
         return parseExpressionStatement();
     }
+    if (match(TokenType::If))
+    {
+        return parseIfStatement();
+    }
+    if (match(TokenType::For))
+    {
+        return parseForStatement();
+    }
+    if (match(TokenType::While))
+    {
+        return parseWhileStatement();
+    }
+    if (match(TokenType::Return))
+    {
+        return parseReturnStatement();
+    }
+    if (match(TokenType::Struct))
+    {
+        return parseStructStatement();
+    }
+    if (match(TokenType::Label))
+    {
+    }
+    if (match(TokenType::Case))
+    {
+    }
+    if (match(TokenType::Goto))
+    {
+    }
 
-    error("Unknown statement", peekToken());
-    return nullptr;
+    return parseExpressionStatement();
 }
 
 std::unique_ptr<Statement> Parser::parseVariableStatement()

@@ -29,6 +29,9 @@ int main(int argc, char argv) {
     while (z < 100) {
         z = z * 2;
     }
+
+    // [a,b] = func();
+
     main(x, local::get_c()[1][2]);
     a.b[0]->a;
     return 0;

@@ -3,6 +3,7 @@
 #include "Lexer/Lexer.hpp"
 #include "Parser/Parser.hpp"
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -28,13 +29,12 @@ int main(int argc, char *argv[])
 
     // Uncomment the following lines to print tokens for debugging
     /*
-    for (const auto& token : tokens) {
-        std::cout << "Token(Type: " << static_cast<int>(token.type)
-                  << ", Lexeme: \"" << token.lexeme
-                  << "\", Line: " << token.line
-                  << ", Column: " << token.column << ")\n";
+    for (const auto &token : tokens)
+    {
+        std::cout << "Token(Type: " << static_cast<int>(token.type) << ", Lexeme: \"" << token.lexeme
+                  << "\", Line: " << token.line << ", Column: " << token.column << ")\n";
     }
-    */
+    //*/
 
     auto startParser = std::chrono::high_resolution_clock::now();
 

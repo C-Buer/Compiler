@@ -23,6 +23,7 @@ class Parser
 
     std::list<std::string> errorMsgList;
     bool disableError = false;
+    bool extraError = false;
 
     // Utility functions
     bool match(TokenType type);

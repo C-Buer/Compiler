@@ -220,7 +220,6 @@ std::unique_ptr<Statement> Parser::parseStatement()
     default:
         return parseExpressionStatement();
     }
-    return parseExpressionStatement();
 }
 
 std::unique_ptr<Statement> Parser::parseVariableStatement()
@@ -713,7 +712,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
         current = startPos;
         if (!expr)
         {
-            errorMsgList.pop_back();
+            // errorMsgList.pop_back();
         }
         expr = parseEquality();
     }
@@ -745,7 +744,7 @@ std::unique_ptr<Expression> Parser::parseEquality()
         current = startPos;
         if (!expr)
         {
-            errorMsgList.pop_back();
+            // errorMsgList.pop_back();
         }
         expr = parseComparison();
     }
@@ -778,7 +777,7 @@ std::unique_ptr<Expression> Parser::parseComparison()
         current = startPos;
         if (!expr)
         {
-            errorMsgList.pop_back();
+            // errorMsgList.pop_back();
         }
         expr = parseTerm();
     }
@@ -810,7 +809,7 @@ std::unique_ptr<Expression> Parser::parseTerm()
         current = startPos;
         if (!expr)
         {
-            errorMsgList.pop_back();
+            // errorMsgList.pop_back();
         }
         expr = parseFactor();
     }
@@ -842,7 +841,7 @@ std::unique_ptr<Expression> Parser::parseFactor()
         current = startPos;
         if (!expr)
         {
-            errorMsgList.pop_back();
+            // errorMsgList.pop_back();
         }
         expr = parseUnaryBack();
     }

@@ -1,8 +1,6 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
-#include <memory>
-#include <string>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
 {
@@ -157,12 +155,47 @@ void Parser::error(const std::string &message, const Token &token)
 
 std::unique_ptr<Statement> Parser::parseStatement()
 {
-    if (isType(peekToken().type))
+    size_t save = current;
+    std::unique_ptr<Expression> type;
+    switch (peekToken().type)
     {
+    case TokenType::If:
+        advanceToken();
+        return parseIfStatement();
+    case TokenType::For:
+        advanceToken();
+        return parseForStatement();
+    case TokenType::While:
+        advanceToken();
+        return parseWhileStatement();
+    case TokenType::Return:
+        advanceToken();
+        return parseReturnStatement();
+    case TokenType::Struct:
+        advanceToken();
+        return parseStructStatement();
+    case TokenType::Label:
+    case TokenType::Case:
+        advanceToken();
+        return nullptr;
+    case TokenType::Identifier:
+    case TokenType::String:
+    case TokenType::Char:
+    case TokenType::Bool:
+    case TokenType::Void:
+    case TokenType::Float:
+    case TokenType::Double:
+    case TokenType::Int64:
+    case TokenType::Int32:
+    case TokenType::Int16:
+    case TokenType::Int8:
+    case TokenType::UInt64:
+    case TokenType::UInt32:
+    case TokenType::UInt16:
+    case TokenType::UInt8:
         // Look ahead to determine if it's a function or variable declaration
-        auto save = current;
         disableError = true;
-        auto type = parsePrimary();
+        type = parsePrimary();
         disableError = false;
 
         if (check(TokenType::Identifier))
@@ -184,37 +217,9 @@ std::unique_ptr<Statement> Parser::parseStatement()
         }
         current = save;
         return parseExpressionStatement();
+    default:
+        return parseExpressionStatement();
     }
-    if (match(TokenType::If))
-    {
-        return parseIfStatement();
-    }
-    if (match(TokenType::For))
-    {
-        return parseForStatement();
-    }
-    if (match(TokenType::While))
-    {
-        return parseWhileStatement();
-    }
-    if (match(TokenType::Return))
-    {
-        return parseReturnStatement();
-    }
-    if (match(TokenType::Struct))
-    {
-        return parseStructStatement();
-    }
-    if (match(TokenType::Label))
-    {
-    }
-    if (match(TokenType::Case))
-    {
-    }
-    if (match(TokenType::Goto))
-    {
-    }
-
     return parseExpressionStatement();
 }
 

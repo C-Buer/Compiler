@@ -18,6 +18,8 @@ target("Parser")
     add_files("src/Parser/*.cpp")
     add_includedirs("include")
 
+    add_vectorexts("all")
+
 target_end()
 
 target("AST")
@@ -26,6 +28,8 @@ target("AST")
 
     add_files("src/AST/*.cpp")
     add_includedirs("include")
+
+    add_vectorexts("all")
 
 target_end()
 

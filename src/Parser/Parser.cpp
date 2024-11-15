@@ -174,6 +174,9 @@ std::unique_ptr<Statement> Parser::parseStatement()
     case TokenType::Struct:
         advanceToken();
         return parseStructStatement();
+    case TokenType::LeftBrace:
+        advanceToken();
+        return parseBlock();
     case TokenType::Label:
     case TokenType::Case:
         advanceToken();

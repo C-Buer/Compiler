@@ -1,6 +1,7 @@
 // ASTPrinter.cpp
 #include "AST/ASTPrinter.hpp"
 #include "AST/AST.hpp"
+#include <iostream>
 
 // Constructor initializes the indentation level to zero
 ASTPrinter::ASTPrinter() : indentLevel(0)
@@ -86,35 +87,38 @@ void ASTPrinter::visit(Block *node)
     std::cout << "}\n";
 }
 
-// Visit method for the LabelStatement node
-void ASTPrinter::visit(LabelStatement *node)
+// Visit method for the NamespaceStatement node
+void ASTPrinter::visit(NamespaceStatement *node)
 {
     printIndent();
+    std::cout << "NamespaceStatement: ";
     node->name->accept(this);
-    std::cout << ": \n";
+    std::cout << "\n";
+    node->body->accept(this);
 }
 
-// Visit method for the LabelCaseStatement node
-void ASTPrinter::visit(LabelCaseStatement *node)
+// Visit method for the ImportStatement node
+void ASTPrinter::visit(ImportStatement *node)
 {
     printIndent();
-    if (node->isCase)
+    std::cout << "ImportStatement: " << node->path;
+    if (node->value)
     {
-        std::cout << "case ";
+        std::cout << " as ";
+        node->value->accept(this);
     }
-    else
-    {
-        std::cout << "label ";
-    }
-    node->label->accept(this);
+    std::cout << ";\n";
 }
 
-// Visit method for the GotolStatement node
-void ASTPrinter::visit(GotoStatement *node)
+// Visit method for the ReturnStatement node
+void ASTPrinter::visit(ReturnStatement *node)
 {
     printIndent();
-    std::cout << "goto ";
-    node->name->accept(this);
+    std::cout << "ReturnStatement: ";
+    if (node->value)
+    {
+        node->value->accept(this);
+    }
     std::cout << ";\n";
 }
 
@@ -211,24 +215,44 @@ void ASTPrinter::visit(WhileStatement *node)
     indentLevel--;
 }
 
-// Visit method for the ReturnStatement node
-void ASTPrinter::visit(ReturnStatement *node)
-{
-    printIndent();
-    std::cout << "ReturnStatement: ";
-    if (node->value)
-    {
-        node->value->accept(this);
-    }
-    std::cout << ";\n";
-}
-
 // Visit method for the ExpressionStatement node
 void ASTPrinter::visit(ExpressionStatement *node)
 {
     printIndent();
     std::cout << "ExpressionStatement: ";
     node->expression->accept(this);
+    std::cout << ";\n";
+}
+
+// Visit method for the LabelStatement node
+void ASTPrinter::visit(LabelStatement *node)
+{
+    printIndent();
+    node->name->accept(this);
+    std::cout << ": \n";
+}
+
+// Visit method for the LabelCaseStatement node
+void ASTPrinter::visit(LabelCaseStatement *node)
+{
+    printIndent();
+    if (node->isCase)
+    {
+        std::cout << "case ";
+    }
+    else
+    {
+        std::cout << "label ";
+    }
+    node->label->accept(this);
+}
+
+// Visit method for the GotolStatement node
+void ASTPrinter::visit(GotoStatement *node)
+{
+    printIndent();
+    std::cout << "goto ";
+    node->name->accept(this);
     std::cout << ";\n";
 }
 

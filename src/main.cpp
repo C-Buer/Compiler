@@ -3,7 +3,6 @@
 #include "Lexer/Lexer.hpp"
 #include "Parser/Parser.hpp"
 #include <chrono>
-#include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>

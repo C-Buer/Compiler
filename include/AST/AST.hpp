@@ -15,6 +15,8 @@ struct StructDefinition;
 struct FunctionDeclaration;
 struct FunctionDefinition;
 struct Block;
+struct NamespaceStatement;
+struct ImportStatement;
 struct IfStatement;
 struct ForStatement;
 struct WhileStatement;
@@ -47,6 +49,8 @@ struct ASTVisitor
     virtual void visit(FunctionDeclaration *node) = 0;
     virtual void visit(FunctionDefinition *node) = 0;
     virtual void visit(Block *node) = 0;
+    virtual void visit(NamespaceStatement *node) = 0;
+    virtual void visit(ImportStatement *node) = 0;
     virtual void visit(ReturnStatement *node) = 0;
     virtual void visit(IfStatement *node) = 0;
     virtual void visit(ForStatement *node) = 0;
@@ -269,6 +273,38 @@ struct Block : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
+// Namespace Statement Node
+struct NamespaceStatement : Statement
+{
+    std::unique_ptr<Expression> name;
+    std::unique_ptr<Statement> body;
+
+    NamespaceStatement(std::unique_ptr<Expression> n, std::unique_ptr<Statement> b);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// Import Statement Node
+struct ImportStatement : Statement
+{
+    std::string path;
+    std::unique_ptr<Expression> value; // Optional
+
+    ImportStatement(const std::string &p, std::unique_ptr<Expression> val = nullptr);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+// Return Statement Node
+struct ReturnStatement : Statement
+{
+    std::unique_ptr<Expression> value; // Optional
+
+    ReturnStatement(std::unique_ptr<Expression> val = nullptr);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
 // If Statement Node
 struct IfStatement : Statement
 {
@@ -307,16 +343,6 @@ struct WhileStatement : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
-// Return Statement Node
-struct ReturnStatement : Statement
-{
-    std::unique_ptr<Expression> value; // Optional
-
-    ReturnStatement(std::unique_ptr<Expression> val = nullptr);
-
-    void accept(ASTVisitor *visitor) override;
-};
-
 // Expression Statement Node
 struct ExpressionStatement : Statement
 {
@@ -327,7 +353,7 @@ struct ExpressionStatement : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
-// LabelStatement Node
+// Label Statement Node
 struct LabelStatement : Statement
 {
     std::unique_ptr<Expression> name;
@@ -337,7 +363,7 @@ struct LabelStatement : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
-// LabelCaseStatement Node
+// LabelCase Statement Node
 struct LabelCaseStatement : Statement
 {
     bool isCase;
@@ -348,7 +374,7 @@ struct LabelCaseStatement : Statement
     void accept(ASTVisitor *visitor) override;
 };
 
-// GotoStatement Node
+// Goto Statement Node
 struct GotoStatement : Statement
 {
     std::unique_ptr<Expression> name;

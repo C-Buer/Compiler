@@ -1,4 +1,5 @@
 #include "AST/AST.hpp"
+#include <utility>
 
 // Literal Implementations
 Literal::Literal(const std::variant<int64_t, double, std::string, char, bool> &val) : value(val)
@@ -173,32 +174,33 @@ void Block::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-// LabelStatement Implementations
-LabelStatement::LabelStatement(std::unique_ptr<Expression> n) : name(std::move(n))
+// NamespaceStatement Implementations
+NamespaceStatement::NamespaceStatement(std::unique_ptr<Expression> n, std::unique_ptr<Statement> b)
+    : name(std::move(n)), body(std::move(b))
 {
 }
 
-void LabelStatement::accept(ASTVisitor *visitor)
-{
-    visitor->visit(this);
-}
-
-// LabelCaseStatement Implementations
-LabelCaseStatement::LabelCaseStatement(bool ic, std::unique_ptr<Statement> l) : isCase(ic), label(std::move(l))
-{
-}
-
-void LabelCaseStatement::accept(ASTVisitor *visitor)
+void NamespaceStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
 
-// GotoStatement Implementations
-GotoStatement::GotoStatement(std::unique_ptr<Expression> n) : name(std::move(n))
+// ImportStatement Implementations
+ImportStatement::ImportStatement(const std::string &p, std::unique_ptr<Expression> val) : path(p), value(std::move(val))
 {
 }
 
-void GotoStatement::accept(ASTVisitor *visitor)
+void ImportStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// ReturnStatement Implementations
+ReturnStatement::ReturnStatement(std::unique_ptr<Expression> val) : value(std::move(val))
+{
+}
+
+void ReturnStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
@@ -238,22 +240,42 @@ void WhileStatement::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-// ReturnStatement Implementations
-ReturnStatement::ReturnStatement(std::unique_ptr<Expression> val) : value(std::move(val))
-{
-}
-
-void ReturnStatement::accept(ASTVisitor *visitor)
-{
-    visitor->visit(this);
-}
-
 // ExpressionStatement Implementations
 ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : expression(std::move(expr))
 {
 }
 
 void ExpressionStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// LabelStatement Implementations
+LabelStatement::LabelStatement(std::unique_ptr<Expression> n) : name(std::move(n))
+{
+}
+
+void LabelStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// LabelCaseStatement Implementations
+LabelCaseStatement::LabelCaseStatement(bool ic, std::unique_ptr<Statement> l) : isCase(ic), label(std::move(l))
+{
+}
+
+void LabelCaseStatement::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
+// GotoStatement Implementations
+GotoStatement::GotoStatement(std::unique_ptr<Expression> n) : name(std::move(n))
+{
+}
+
+void GotoStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }

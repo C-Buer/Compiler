@@ -4,9 +4,11 @@
 #include "Token.hpp"
 #include <iostream>
 #include <list>
+#include <locale>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 
 class Lexer
 {

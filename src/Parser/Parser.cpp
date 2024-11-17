@@ -177,6 +177,9 @@ std::unique_ptr<Statement> Parser::parseStatement()
     case TokenType::LeftBrace:
         advanceToken();
         return parseBlock();
+    case TokenType::Goto:
+        advanceToken();
+        return nullptr;
     case TokenType::Label:
     case TokenType::Case:
         advanceToken();
@@ -357,6 +360,15 @@ std::unique_ptr<Statement> Parser::parseBlock()
     }
 
     return block;
+}
+
+std::unique_ptr<Statement> Parser::parseNamespaceStatement()
+{
+    auto name = parsePrimary();
+}
+
+std::unique_ptr<Statement> Parser::parseImportStatement()
+{
 }
 
 std::unique_ptr<Statement> Parser::parseReturnStatement()

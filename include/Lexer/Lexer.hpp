@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 class Lexer
 {
   public:
@@ -28,17 +27,19 @@ class Lexer
                                                            {"class", TokenType::Class},
                                                            {"union", TokenType::Union},
                                                            {"enum", TokenType::Enum},
+                                                           {"match", TokenType::Match},
+                                                           {"namespace", TokenType::Namespace},
+                                                           {"import", TokenType::Import},
+                                                           {"as", TokenType::As},
+                                                           {"return", TokenType::Return},
                                                            {"if", TokenType::If},
                                                            {"else", TokenType::Else},
                                                            {"for", TokenType::For},
+                                                           {"in", TokenType::In},
                                                            {"while", TokenType::While},
-                                                           {"return", TokenType::Return},
                                                            {"label", TokenType::Label},
                                                            {"case", TokenType::Case},
                                                            {"goto", TokenType::Goto},
-                                                           {"match", TokenType::Match},
-                                                           {"import", TokenType::Import},
-                                                           {"namespace", TokenType::Namespace},
                                                            {"true", TokenType::True},
                                                            {"false", TokenType::False},
                                                            // Primitive Types

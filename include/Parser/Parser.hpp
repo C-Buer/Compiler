@@ -40,6 +40,8 @@ class Parser
     std::unique_ptr<Statement> parseStructStatement();
     std::unique_ptr<Statement> parseFunctionStatement();
     std::unique_ptr<Statement> parseBlock();
+    std::unique_ptr<Statement> parseNamespaceStatement();
+    std::unique_ptr<Statement> parseImportStatement();
     std::unique_ptr<Statement> parseReturnStatement();
     std::unique_ptr<Statement> parseIfStatement();
     std::unique_ptr<Statement> parseForStatement();

@@ -1,5 +1,10 @@
 // test.cbuer
 
+import "test";
+import "test" as test;
+
+namespace test{}
+
 struct test
 {
     int a;

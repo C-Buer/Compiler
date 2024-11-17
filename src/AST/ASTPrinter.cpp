@@ -101,13 +101,13 @@ void ASTPrinter::visit(NamespaceStatement *node)
 void ASTPrinter::visit(ImportStatement *node)
 {
     printIndent();
-    std::cout << "ImportStatement: " << node->path;
+    std::cout << "ImportStatement: \"" << node->path;
     if (node->value)
     {
-        std::cout << " as ";
+        std::cout << "\" as ";
         node->value->accept(this);
     }
-    std::cout << ";\n";
+    std::cout << "\";\n";
 }
 
 // Visit method for the ReturnStatement node

@@ -1,6 +1,9 @@
 #include "Parser/Parser.hpp"
 #include "AST/AST.hpp"
 #include "Lexer/Token.hpp"
+#include <cstddef>
+#include <memory>
+#include <utility>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
 {
@@ -159,6 +162,12 @@ std::unique_ptr<Statement> Parser::parseStatement()
     std::unique_ptr<Expression> type;
     switch (peekToken().type)
     {
+    case TokenType::Namespace:
+        advanceToken();
+        return parseNamespaceStatement();
+    case TokenType::Import:
+        advanceToken();
+        return parseImportStatement();
     case TokenType::If:
         advanceToken();
         return parseIfStatement();
@@ -238,7 +247,7 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
         return nullptr;
     }
 
-    std::unique_ptr<Expression> initializer = parseAssignExpr();
+    auto initializer = parseAssignExpr();
     if (!initializer)
     {
         error("Expected initializer expression", peekToken());
@@ -365,10 +374,55 @@ std::unique_ptr<Statement> Parser::parseBlock()
 std::unique_ptr<Statement> Parser::parseNamespaceStatement()
 {
     auto name = parsePrimary();
+    if (!name)
+    {
+        error("Expected name expression after 'namespace'", peekToken());
+        return nullptr;
+    }
+    if (!match(TokenType::LeftBrace))
+    {
+        error("Expected '{' to start namespace body", peekToken());
+        return nullptr;
+    }
+    auto body = parseBlock();
+    if (!body)
+    {
+        error("Expected namespace body", peekToken());
+        return nullptr;
+    }
+    return std::make_unique<NamespaceStatement>(std::move(name), std::move(body));
 }
 
 std::unique_ptr<Statement> Parser::parseImportStatement()
 {
+    if (!match(TokenType::StringLiteral))
+    {
+        error("Expected a file path to import", peekToken());
+        return nullptr;
+    }
+    auto path = previousToken().lexeme;
+    if (match(TokenType::Semicolon))
+    {
+        return std::make_unique<ImportStatement>(path);
+    }
+    if (!match(TokenType::As))
+    {
+        error("Expected ';' after import statement", peekToken());
+        return nullptr;
+    }
+
+    auto value = parsePrimary();
+    if (!value)
+    {
+        error("Expected namespace expression after 'as'", peekToken());
+        return nullptr;
+    }
+    if (!match(TokenType::Semicolon))
+    {
+        error("Expected ';' after import statement", peekToken());
+        return nullptr;
+    }
+    return std::make_unique<ImportStatement>(path, std::move(value));
 }
 
 std::unique_ptr<Statement> Parser::parseReturnStatement()
@@ -986,12 +1040,12 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         std::unique_ptr<Expression> expr = std::make_unique<IdentifierExpr>(previousToken().lexeme);
         while (match(TokenType::Scope))
         {
-            auto member = parseSubsript();
-            if (!member)
+            if (!match(TokenType::Identifier))
             {
                 error("Expected member expression after scope", previousToken());
                 return nullptr;
             }
+            std::unique_ptr<Expression> member = std::make_unique<IdentifierExpr>(previousToken().lexeme);
             // For simplicity, treat unary as binary with left operand as null
             expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
         }

@@ -210,7 +210,7 @@ std::unique_ptr<Statement> Parser::parseStatement()
     case TokenType::UInt8:
         // Look ahead to determine if it's a function or variable declaration
         disableError = true;
-        type = parsePrimary();
+        type = parsePrimaryType();
         disableError = false;
 
         if (check(TokenType::Identifier))
@@ -240,7 +240,7 @@ std::unique_ptr<Statement> Parser::parseStatement()
 std::unique_ptr<Statement> Parser::parseVariableStatement()
 {
     // Check if the current token is a type
-    auto type = parsePrimary();
+    auto type = parsePrimaryType();
     if (!type)
     {
         error("Expected type in variable declaration", peekToken());
@@ -263,7 +263,7 @@ std::unique_ptr<Statement> Parser::parseVariableStatement()
 
 std::unique_ptr<Statement> Parser::parseStructStatement()
 {
-    auto type = parsePrimary();
+    auto type = parsePrimaryType();
     if (!type)
     {
         error("Expected type name in struct declaration", peekToken());
@@ -290,7 +290,7 @@ std::unique_ptr<Statement> Parser::parseStructStatement()
 std::unique_ptr<Statement> Parser::parseFunctionStatement()
 {
     // Assume the current token is a type
-    auto returnType = parsePrimary();
+    auto returnType = parsePrimaryType();
     if (!returnType)
     {
         error("Expected return type for function", peekToken());
@@ -373,7 +373,7 @@ std::unique_ptr<Statement> Parser::parseBlock()
 
 std::unique_ptr<Statement> Parser::parseNamespaceStatement()
 {
-    auto name = parsePrimary();
+    auto name = parsePrimaryType();
     if (!name)
     {
         error("Expected name expression after 'namespace'", peekToken());
@@ -411,7 +411,7 @@ std::unique_ptr<Statement> Parser::parseImportStatement()
         return nullptr;
     }
 
-    auto value = parsePrimary();
+    auto value = parsePrimaryType();
     if (!value)
     {
         error("Expected namespace expression after 'as'", peekToken());
@@ -729,7 +729,7 @@ std::unique_ptr<Expression> Parser::parseParameter()
     // Check if the current token is a type
     if (isType(peekToken().type))
     {
-        auto type = parsePrimary();
+        auto type = parsePrimaryType();
 
         std::unique_ptr<Expression> initializer = parseAssignment();
         if (!initializer)
@@ -928,7 +928,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
             error("Expected expression before unary operator", oper);
             return nullptr;
         }
-        // For simplicity, treat unary as binary with left operand as null
+
         expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
     }
     return expr;
@@ -936,7 +936,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
 
 std::unique_ptr<Expression> Parser::parseUnaryFront()
 {
-    if (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
+    while (match(TokenType::Exclamation) || match(TokenType::Decrement) || match(TokenType::Increment))
     {
         Token oper = previousToken();
         auto right = parseUnaryFront();
@@ -945,7 +945,7 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
             error("Expected expression after unary operator", oper);
             return nullptr;
         }
-        // For simplicity, treat unary as binary with left operand as null
+
         return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
     }
     return parseMemberAccess();
@@ -955,38 +955,22 @@ std::unique_ptr<Expression> Parser::parseMemberAccess()
 {
     auto expr = parseSubsript();
 
-    if (match(TokenType::Dot))
+    while (match(TokenType::Dot) || match(TokenType::Arrow))
     {
+        auto isPtr = previousToken().type == TokenType::Arrow;
         if (!expr)
         {
-            error("Expected name expression before dot member access", previousToken());
+            error("Expected name expression before dot or arrow member access", previousToken());
             return nullptr;
         }
         auto member = parseSubsript();
         if (!member)
         {
-            error("Expected member expression after dot member access", previousToken());
+            error("Expected member expression after dot or arrow member access", previousToken());
             return nullptr;
         }
-        // For simplicity, treat unary as binary with left operand as null
-        expr = std::make_unique<MemberAccessExpr>(false, std::move(expr), std::move(member));
-    }
 
-    if (match(TokenType::Arrow))
-    {
-        if (!expr)
-        {
-            error("Expected name expression before arrow member access", previousToken());
-            return nullptr;
-        }
-        auto member = parseSubsript();
-        if (!member)
-        {
-            error("Expected member expression after arrow member access", previousToken());
-            return nullptr;
-        }
-        // For simplicity, treat unary as binary with left operand as null
-        expr = std::make_unique<MemberAccessExpr>(true, std::move(expr), std::move(member));
+        expr = std::make_unique<MemberAccessExpr>(isPtr, std::move(expr), std::move(member));
     }
     return expr;
 }
@@ -1035,25 +1019,9 @@ std::unique_ptr<Expression> Parser::parseFunctionCall()
 
 std::unique_ptr<Expression> Parser::parsePrimary()
 {
-    if (match(TokenType::Identifier))
+    if (isType(peekToken().type))
     {
-        std::unique_ptr<Expression> expr = std::make_unique<IdentifierExpr>(previousToken().lexeme);
-        while (match(TokenType::Scope))
-        {
-            if (!match(TokenType::Identifier))
-            {
-                error("Expected member expression after scope", previousToken());
-                return nullptr;
-            }
-            std::unique_ptr<Expression> member = std::make_unique<IdentifierExpr>(previousToken().lexeme);
-            // For simplicity, treat unary as binary with left operand as null
-            expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
-        }
-        return expr;
-    }
-    if (isBaseType(peekToken().type))
-    {
-        return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
+        return parsePrimaryType();
     }
     if (match(TokenType::LeftParen))
     {
@@ -1066,6 +1034,31 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         return expr;
     }
     return parseConstant();
+}
+
+std::unique_ptr<Expression> Parser::parsePrimaryType()
+{
+    if (match(TokenType::Identifier))
+    {
+        return parseNamesapce();
+    }
+    return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
+}
+
+std::unique_ptr<Expression> Parser::parseNamesapce()
+{
+    std::unique_ptr<Expression> expr = std::make_unique<IdentifierExpr>(previousToken().lexeme);
+    while (match(TokenType::Scope))
+    {
+        if (!match(TokenType::Identifier))
+        {
+            error("Expected member expression after scope", previousToken());
+            return nullptr;
+        }
+        std::unique_ptr<Expression> member = std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
+    }
+    return expr;
 }
 
 std::unique_ptr<Expression> Parser::parseConstant()

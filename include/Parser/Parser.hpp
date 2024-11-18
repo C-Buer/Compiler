@@ -63,6 +63,8 @@ class Parser
     std::unique_ptr<Expression> parseFunctionCall();
     std::unique_ptr<Expression> parseMemberAccess();
     std::unique_ptr<Expression> parsePrimary();
+    std::unique_ptr<Expression> parsePrimaryType();
+    std::unique_ptr<Expression> parseNamesapce();
     std::unique_ptr<Expression> parseConstant();
 
     // Helper function to check if a token is a type

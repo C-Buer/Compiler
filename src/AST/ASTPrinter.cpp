@@ -1,7 +1,6 @@
 // ASTPrinter.cpp
 #include "AST/ASTPrinter.hpp"
 #include "AST/AST.hpp"
-#include <iostream>
 
 // Constructor initializes the indentation level to zero
 ASTPrinter::ASTPrinter() : indentLevel(0)
@@ -340,9 +339,12 @@ void ASTPrinter::visit(BasicTypeExpr *node)
 // Visit method for the NamespaceExpr node
 void ASTPrinter::visit(NamespaceExpr *node)
 {
-    node->name->accept(this);
-    std::cout << "::";
-    node->member->accept(this);
+    node->zone->accept(this);
+    for (auto &tmp : node->name)
+    {
+        std::cout << "::";
+        tmp->accept(this);
+    }
 }
 
 // Visit method for the MemberAccessExpr node

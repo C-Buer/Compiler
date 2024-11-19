@@ -32,9 +32,14 @@ void BasicTypeExpr::accept(ASTVisitor *visitor)
 }
 
 // NamespaceExpr Implementations
-NamespaceExpr::NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m)
-    : name(std::move(n)), member(std::move(m))
+NamespaceExpr::NamespaceExpr(std::unique_ptr<Expression> z, std::vector<std::unique_ptr<Expression>> &n)
+    : zone(std::move(z))
 {
+    name.reserve(n.size());
+    for (auto &tmp : n)
+    {
+        name.push_back(std::move(tmp));
+    }
 }
 
 void NamespaceExpr::accept(ASTVisitor *visitor)

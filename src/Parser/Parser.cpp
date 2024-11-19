@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 BasicTypeExpr::BasicType TokenToBasic(TokenType token)
 {
@@ -1040,6 +1041,10 @@ std::unique_ptr<Expression> Parser::parsePrimaryType()
 {
     if (match(TokenType::Identifier))
     {
+        if (!check(TokenType::Scope))
+        {
+            return std::make_unique<IdentifierExpr>(previousToken().lexeme);
+        }
         return parseNamesapce();
     }
     return std::make_unique<BasicTypeExpr>(TokenToBasic(advanceToken().type));
@@ -1047,7 +1052,8 @@ std::unique_ptr<Expression> Parser::parsePrimaryType()
 
 std::unique_ptr<Expression> Parser::parseNamesapce()
 {
-    std::unique_ptr<Expression> expr = std::make_unique<IdentifierExpr>(previousToken().lexeme);
+    std::unique_ptr<Expression> zone = std::make_unique<IdentifierExpr>(previousToken().lexeme);
+    std::vector<std::unique_ptr<Expression>> name;
     while (match(TokenType::Scope))
     {
         if (!match(TokenType::Identifier))
@@ -1055,10 +1061,9 @@ std::unique_ptr<Expression> Parser::parseNamesapce()
             error("Expected member expression after scope", previousToken());
             return nullptr;
         }
-        std::unique_ptr<Expression> member = std::make_unique<IdentifierExpr>(previousToken().lexeme);
-        expr = std::make_unique<NamespaceExpr>(std::move(expr), std::move(member));
+        name.push_back(std::make_unique<IdentifierExpr>(previousToken().lexeme));
     }
-    return expr;
+    return std::make_unique<NamespaceExpr>(std::move(zone), name);
 }
 
 std::unique_ptr<Expression> Parser::parseConstant()

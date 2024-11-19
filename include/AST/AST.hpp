@@ -130,10 +130,10 @@ struct BasicTypeExpr : Expression
 
 struct NamespaceExpr : Expression
 {
-    std::unique_ptr<Expression> name;
-    std::unique_ptr<Expression> member;
+    std::unique_ptr<Expression> zone;
+    std::vector<std::unique_ptr<Expression>> name;
 
-    NamespaceExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> m);
+    NamespaceExpr(std::unique_ptr<Expression> z, std::vector<std::unique_ptr<Expression>> &n);
 
     void accept(ASTVisitor *visitor) override;
 };

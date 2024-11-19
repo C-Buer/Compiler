@@ -42,6 +42,8 @@ class Lexer
                                                            {"goto", TokenType::Goto},
                                                            {"true", TokenType::True},
                                                            {"false", TokenType::False},
+                                                           {"public", TokenType::Public},
+                                                           {"private", TokenType::Private},
                                                            // Primitive Types
                                                            {"string", TokenType::String},
                                                            {"char", TokenType::Char},
@@ -56,7 +58,8 @@ class Lexer
                                                            {"uint64", TokenType::UInt64},
                                                            {"uint32", TokenType::UInt32},
                                                            {"uint16", TokenType::UInt16},
-                                                           {"uint8", TokenType::UInt8}};
+                                                           {"uint8", TokenType::UInt8},
+                                                           {"ptr", TokenType::Ptr}};
 
     char peek();
     char peekNext();

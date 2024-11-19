@@ -11,7 +11,7 @@ struct test
     float b;
 }
 
-global::ptr malloc();
+global malloc();
 
 int main(int argc, char argv) {
     int64 x = 10;
@@ -36,7 +36,7 @@ int main(int argc, char argv) {
     }
 
     // [a,b] = func();
-
+    ----i;
     main(x, local::get_c()[1][2]);
     a.b.c[0]->a;
     return 0;

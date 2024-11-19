@@ -77,6 +77,8 @@ enum class TokenType
     Match,
     True,
     False,
+    Public,
+    Private,
 
     // Primitive Types
     String,
@@ -93,6 +95,7 @@ enum class TokenType
     UInt32,
     UInt16,
     UInt8,
+    Ptr,
 
     // End of file
     EndOfFile,

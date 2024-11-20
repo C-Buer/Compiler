@@ -20,11 +20,13 @@ int main(int argc, char argv) {
     char c = 'A';
     bool flag = true;
     string message = "Hello, C Buer!";
+    arrow d = {};
     
     if (x > 5) {
         y = y + 1.5 + y * 5;
     } else {
         y = y - 1.5;
+        goto testlable;
     }
     
     for (int64 i = 0; i < x; local::i++++) {
@@ -32,6 +34,7 @@ int main(int argc, char argv) {
     }
     
     while (z < 100) {
+        label testlable;
         z = z * 2;
     }
 

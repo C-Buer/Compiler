@@ -47,6 +47,8 @@ class Parser
     std::unique_ptr<Statement> parseForStatement();
     std::unique_ptr<Statement> parseWhileStatement();
     std::unique_ptr<Statement> parseExpressionStatement();
+    std::unique_ptr<Statement> parseLabelStatement();
+    std::unique_ptr<Statement> parseGotoStatement();
     std::unique_ptr<Expression> parseMultiExpr();
     std::unique_ptr<Expression> parseParamExpr();
     std::unique_ptr<Expression> parseAssignExpr();

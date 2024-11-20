@@ -24,7 +24,7 @@ struct ASTPrinter : ASTVisitor
     void visit(ReturnStatement *node) override;
     void visit(ExpressionStatement *node) override;
     void visit(LabelStatement *node) override;
-    void visit(LabelCaseStatement *node) override;
+    void visit(CaseStatement *node) override;
     void visit(GotoStatement *node) override;
     void visit(Literal *node) override;
     void visit(IdentifierExpr *node) override;
@@ -37,6 +37,7 @@ struct ASTPrinter : ASTVisitor
     void visit(FunctionCallExpr *node) override;
     void visit(SubscriptExpr *node) override;
     void visit(MultiExpr *node) override;
+    void visit(BindExpr *node) override;
 
   private:
     int indentLevel;          // Current indentation level

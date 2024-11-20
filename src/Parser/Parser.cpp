@@ -187,13 +187,15 @@ std::unique_ptr<Statement> Parser::parseStatement()
     case TokenType::LeftBrace:
         advanceToken();
         return parseBlock();
-    case TokenType::Goto:
-        advanceToken();
-        return nullptr;
     case TokenType::Label:
+        advanceToken();
+        return parseLabelStatement();
     case TokenType::Case:
         advanceToken();
         return nullptr;
+    case TokenType::Goto:
+        advanceToken();
+        return parseGotoStatement();
     case TokenType::Identifier:
     case TokenType::String:
     case TokenType::Char:
@@ -651,6 +653,40 @@ std::unique_ptr<Statement> Parser::parseExpressionStatement()
     return std::make_unique<ExpressionStatement>(std::move(expr));
 }
 
+// Implement parseLabelStatement
+std::unique_ptr<Statement> Parser::parseLabelStatement()
+{
+    if (!check(TokenType::Identifier))
+    {
+        error("Expected identifier after lable statement", peekToken());
+        return nullptr;
+    }
+    auto name = std::make_unique<IdentifierExpr>(advanceToken().lexeme);
+    if (!match(TokenType::Semicolon))
+    {
+        error("Expected ';' after lable statement", peekToken());
+        return nullptr;
+    }
+    return std::make_unique<LabelStatement>(std::move(name));
+}
+
+// Implement parseGotoStatement
+std::unique_ptr<Statement> Parser::parseGotoStatement()
+{
+    if (!check(TokenType::Identifier))
+    {
+        error("Expected identifier after goto statement", peekToken());
+        return nullptr;
+    }
+    auto name = std::make_unique<IdentifierExpr>(advanceToken().lexeme);
+    if (!match(TokenType::Semicolon))
+    {
+        error("Expected ';' after goto statement", peekToken());
+        return nullptr;
+    }
+    return std::make_unique<GotoStatement>(std::move(name));
+}
+
 std::unique_ptr<Expression> Parser::parseMultiExpr()
 {
     std::vector<std::unique_ptr<Expression>> parameters;
@@ -1033,6 +1069,16 @@ std::unique_ptr<Expression> Parser::parsePrimary()
             return nullptr;
         }
         return expr;
+    }
+    if (match(TokenType::LeftBrace))
+    {
+        auto expr = parseMultiExpr();
+        if (!match(TokenType::RightBrace))
+        {
+            error("Expected '}' after expression", peekToken());
+            return nullptr;
+        }
+        return std::make_unique<BindExpr>(std::move(expr));
     }
     return parseConstant();
 }

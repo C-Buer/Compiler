@@ -231,18 +231,11 @@ void ASTPrinter::visit(LabelStatement *node)
     std::cout << ": \n";
 }
 
-// Visit method for the LabelCaseStatement node
-void ASTPrinter::visit(LabelCaseStatement *node)
+// Visit method for the CaseStatement node
+void ASTPrinter::visit(CaseStatement *node)
 {
     printIndent();
-    if (node->isCase)
-    {
-        std::cout << "case ";
-    }
-    else
-    {
-        std::cout << "label ";
-    }
+    std::cout << "label ";
     node->label->accept(this);
 }
 
@@ -427,4 +420,15 @@ void ASTPrinter::visit(MultiExpr *node)
             std::cout << ", ";
         }
     }
+}
+
+// Visit method for the BindExpr node
+void ASTPrinter::visit(BindExpr *node)
+{
+    std::cout << "{";
+    if (node->param)
+    {
+        node->param->accept(this);
+    }
+    std::cout << "}";
 }

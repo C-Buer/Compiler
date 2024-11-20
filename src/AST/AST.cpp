@@ -125,6 +125,15 @@ void MultiExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+BindExpr::BindExpr(std::unique_ptr<Expression> p) : param(std::move(p))
+{
+}
+
+void BindExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 // VariableDefinition Implementations
 VariableDefinition::VariableDefinition(std::unique_ptr<Expression> t, std::unique_ptr<Expression> init)
     : type(std::move(t)), initializer(std::move(init))
@@ -265,12 +274,12 @@ void LabelStatement::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
-// LabelCaseStatement Implementations
-LabelCaseStatement::LabelCaseStatement(bool ic, std::unique_ptr<Statement> l) : isCase(ic), label(std::move(l))
+// CaseStatement Implementations
+CaseStatement::CaseStatement(std::unique_ptr<Statement> l) : label(std::move(l))
 {
 }
 
-void LabelCaseStatement::accept(ASTVisitor *visitor)
+void CaseStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }

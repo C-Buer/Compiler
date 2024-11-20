@@ -23,7 +23,7 @@ struct WhileStatement;
 struct ReturnStatement;
 struct ExpressionStatement;
 struct LabelStatement;
-struct LabelCaseStatement;
+struct CaseStatement;
 struct GotoStatement;
 struct Expression;
 struct Literal;
@@ -37,6 +37,7 @@ struct BinaryExpr;
 struct FunctionCallExpr;
 struct SubscriptExpr;
 struct MultiExpr;
+struct BindExpr;
 
 // Visitor Interface
 struct ASTVisitor
@@ -57,7 +58,7 @@ struct ASTVisitor
     virtual void visit(WhileStatement *node) = 0;
     virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(LabelStatement *node) = 0;
-    virtual void visit(LabelCaseStatement *node) = 0;
+    virtual void visit(CaseStatement *node) = 0;
     virtual void visit(GotoStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;
@@ -70,6 +71,7 @@ struct ASTVisitor
     virtual void visit(FunctionCallExpr *node) = 0;
     virtual void visit(SubscriptExpr *node) = 0;
     virtual void visit(MultiExpr *node) = 0;
+    virtual void visit(BindExpr *node) = 0;
     // Add more visit methods for additional AST nodes as needed
 };
 
@@ -205,6 +207,15 @@ struct MultiExpr : Expression
     std::vector<std::unique_ptr<Expression>> parameters;
 
     MultiExpr(std::vector<std::unique_ptr<Expression>> &params);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct BindExpr : Expression
+{
+    std::unique_ptr<Expression> param;
+
+    BindExpr(std::unique_ptr<Expression> p);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -364,12 +375,11 @@ struct LabelStatement : Statement
 };
 
 // LabelCase Statement Node
-struct LabelCaseStatement : Statement
+struct CaseStatement : Statement
 {
-    bool isCase;
     std::unique_ptr<Statement> label;
 
-    LabelCaseStatement(bool ic, std::unique_ptr<Statement> l);
+    CaseStatement(std::unique_ptr<Statement> l);
 
     void accept(ASTVisitor *visitor) override;
 };

@@ -24,7 +24,6 @@ struct ASTPrinter : ASTVisitor
     void visit(ReturnStatement *node) override;
     void visit(ExpressionStatement *node) override;
     void visit(LabelStatement *node) override;
-    void visit(CaseStatement *node) override;
     void visit(GotoStatement *node) override;
     void visit(Literal *node) override;
     void visit(IdentifierExpr *node) override;

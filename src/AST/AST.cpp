@@ -274,6 +274,7 @@ void LabelStatement::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+/*
 // CaseStatement Implementations
 CaseStatement::CaseStatement(std::unique_ptr<Statement> l) : label(std::move(l))
 {
@@ -283,6 +284,7 @@ void CaseStatement::accept(ASTVisitor *visitor)
 {
     visitor->visit(this);
 }
+*/
 
 // GotoStatement Implementations
 GotoStatement::GotoStatement(std::unique_ptr<Expression> n) : name(std::move(n))

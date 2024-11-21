@@ -58,7 +58,6 @@ struct ASTVisitor
     virtual void visit(WhileStatement *node) = 0;
     virtual void visit(ExpressionStatement *node) = 0;
     virtual void visit(LabelStatement *node) = 0;
-    virtual void visit(CaseStatement *node) = 0;
     virtual void visit(GotoStatement *node) = 0;
     virtual void visit(Literal *node) = 0;
     virtual void visit(IdentifierExpr *node) = 0;

@@ -227,25 +227,18 @@ void ASTPrinter::visit(ExpressionStatement *node)
 void ASTPrinter::visit(LabelStatement *node)
 {
     printIndent();
+    std::cout << "LableStatement: label ";
     node->name->accept(this);
-    std::cout << ": \n";
-}
-
-// Visit method for the CaseStatement node
-void ASTPrinter::visit(CaseStatement *node)
-{
-    printIndent();
-    std::cout << "label ";
-    node->label->accept(this);
+    std::cout << "; \n";
 }
 
 // Visit method for the GotolStatement node
 void ASTPrinter::visit(GotoStatement *node)
 {
     printIndent();
-    std::cout << "goto ";
+    std::cout << "GotoStatement: goto ";
     node->name->accept(this);
-    std::cout << ";\n";
+    std::cout << "; \n";
 }
 
 // Visit method for the Literal node

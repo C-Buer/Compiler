@@ -34,6 +34,7 @@ struct MemberAccessExpr;
 struct AssignmentExpr;
 struct ParameterExpr;
 struct BinaryExpr;
+struct UnaryExpr;
 struct FunctionCallExpr;
 struct SubscriptExpr;
 struct MultiExpr;
@@ -67,6 +68,7 @@ struct ASTVisitor
     virtual void visit(AssignmentExpr *node) = 0;
     virtual void visit(ParameterExpr *node) = 0;
     virtual void visit(BinaryExpr *node) = 0;
+    virtual void visit(UnaryExpr *node) = 0;
     virtual void visit(FunctionCallExpr *node) = 0;
     virtual void visit(SubscriptExpr *node) = 0;
     virtual void visit(MultiExpr *node) = 0;
@@ -177,6 +179,17 @@ struct BinaryExpr : Expression
     std::unique_ptr<Expression> right;
 
     BinaryExpr(const std::string &oper, std::unique_ptr<Expression> l, std::unique_ptr<Expression> r);
+
+    void accept(ASTVisitor *visitor) override;
+};
+
+struct UnaryExpr : Expression
+{
+    bool isFont;
+    std::string op;
+    std::unique_ptr<Expression> value;
+
+    UnaryExpr(const std::string &oper, std::unique_ptr<Expression> val, bool is = false);
 
     void accept(ASTVisitor *visitor) override;
 };

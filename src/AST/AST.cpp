@@ -91,6 +91,17 @@ void BinaryExpr::accept(ASTVisitor *visitor)
     visitor->visit(this);
 }
 
+// UnaryExpr Implementations
+UnaryExpr::UnaryExpr(const std::string &oper, std::unique_ptr<Expression> val, bool is)
+    : op(oper), value(std::move(val)), isFont(is)
+{
+}
+
+void UnaryExpr::accept(ASTVisitor *visitor)
+{
+    visitor->visit(this);
+}
+
 FunctionCallExpr::FunctionCallExpr(std::unique_ptr<Expression> n, std::unique_ptr<Expression> params)
     : name(std::move(n)), parameters(std::move(params))
 {

@@ -33,6 +33,7 @@ struct ASTPrinter : ASTVisitor
     void visit(AssignmentExpr *node) override;
     void visit(ParameterExpr *node) override;
     void visit(BinaryExpr *node) override;
+    void visit(UnaryExpr *node) override;
     void visit(FunctionCallExpr *node) override;
     void visit(SubscriptExpr *node) override;
     void visit(MultiExpr *node) override;

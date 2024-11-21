@@ -380,6 +380,23 @@ void ASTPrinter::visit(BinaryExpr *node)
     std::cout << ")";
 }
 
+// Visit method for the UnaryExpr node
+void ASTPrinter::visit(UnaryExpr *node)
+{
+    std::cout << "(";
+    if (node->isFont)
+    {
+        node->value->accept(this);
+        std::cout << " " << node->op << " ";
+    }
+    else
+    {
+        std::cout << " " << node->op << " ";
+        node->value->accept(this);
+    }
+    std::cout << ")";
+}
+
 // Visit method for the FunctionCallExpr node
 void ASTPrinter::visit(FunctionCallExpr *node)
 {

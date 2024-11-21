@@ -966,7 +966,7 @@ std::unique_ptr<Expression> Parser::parseUnaryBack()
             return nullptr;
         }
 
-        expr = std::make_unique<BinaryExpr>(oper.lexeme, std::move(expr), nullptr);
+        expr = std::make_unique<UnaryExpr>(oper.lexeme, std::move(expr));
     }
     return expr;
 }
@@ -983,7 +983,7 @@ std::unique_ptr<Expression> Parser::parseUnaryFront()
             return nullptr;
         }
 
-        return std::make_unique<BinaryExpr>(oper.lexeme, nullptr, std::move(right));
+        return std::make_unique<UnaryExpr>(oper.lexeme, std::move(right), true);
     }
     return parseMemberAccess();
 }

@@ -1,3 +1,3 @@
 # Compiler
 C-Buer compiler
-Laxer working
+Laxer and Parser working

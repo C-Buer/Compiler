@@ -264,10 +264,11 @@ struct StructDefinition : Statement
 struct FunctionDeclaration : Statement
 {
     std::unique_ptr<Expression> returnType;
-    std::string name;
+    std::unique_ptr<Expression> name;
     std::unique_ptr<Expression> parameters;
 
-    FunctionDeclaration(std::unique_ptr<Expression> retType, const std::string &n, std::unique_ptr<Expression> params);
+    FunctionDeclaration(std::unique_ptr<Expression> retType, std::unique_ptr<Expression> n,
+                        std::unique_ptr<Expression> params);
 
     void accept(ASTVisitor *visitor) override;
 };
@@ -276,12 +277,12 @@ struct FunctionDeclaration : Statement
 struct FunctionDefinition : Statement
 {
     std::unique_ptr<Expression> returnType;
-    std::string name;
+    std::unique_ptr<Expression> name;
     std::unique_ptr<Expression> parameters;
     std::unique_ptr<Statement> body;
 
-    FunctionDefinition(std::unique_ptr<Expression> retType, const std::string &n, std::unique_ptr<Expression> params,
-                       std::unique_ptr<Statement> b);
+    FunctionDefinition(std::unique_ptr<Expression> retType, std::unique_ptr<Expression> n,
+                       std::unique_ptr<Expression> params, std::unique_ptr<Statement> b);
 
     void accept(ASTVisitor *visitor) override;
 };

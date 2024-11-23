@@ -306,8 +306,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
         return nullptr;
     }
 
-    Token nameToken = peekToken();
-    std::string name = nameToken.lexeme;
+    auto name = parseNamesapce();
     advanceToken(); // Consume function name
 
     if (!match(TokenType::LeftParen))
@@ -327,7 +326,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
 
     if (match(TokenType::Semicolon))
     {
-        return std::make_unique<FunctionDeclaration>(std::move(returnType), name, std::move(parameters));
+        return std::make_unique<FunctionDeclaration>(std::move(returnType), std::move(name), std::move(parameters));
     }
 
     // Parse function body (block)
@@ -344,7 +343,8 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement()
         return nullptr;
     }
 
-    return std::make_unique<FunctionDefinition>(std::move(returnType), name, std::move(parameters), std::move(body));
+    return std::make_unique<FunctionDefinition>(std::move(returnType), std::move(name), std::move(parameters),
+                                                std::move(body));
 }
 
 std::unique_ptr<Statement> Parser::parseBlock()

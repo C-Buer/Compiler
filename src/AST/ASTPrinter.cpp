@@ -55,7 +55,9 @@ void ASTPrinter::visit(FunctionDeclaration *node)
     printIndent();
     std::cout << "FunctionDeclaration: ";
     node->returnType->accept(this);
-    std::cout << " " << node->name << "(";
+    std::cout << " ";
+    node->name->accept(this);
+    std::cout << "(";
     node->parameters->accept(this);
     std::cout << ");\n";
 }
@@ -65,7 +67,9 @@ void ASTPrinter::visit(FunctionDefinition *node)
 {
     printIndent();
     node->returnType->accept(this);
-    std::cout << " " << node->name << "(";
+    std::cout << " ";
+    node->name->accept(this);
+    std::cout << "(";
     node->parameters->accept(this);
     std::cout << ")\n";
     node->body->accept(this);

@@ -1,4 +1,5 @@
 #include "MultilevelLexer.hpp"
+#include <sstream>
 
 MultilevelLexer::MultilevelLexer()
 {
@@ -10,30 +11,53 @@ void MultilevelLexer::addLayer(std::unique_ptr<LexerLevel> layer)
     layers.push_back(std::move(layer));
 }
 
+std::vector<SourceChunk> MultilevelLexer::chunkify(const std::string &source, size_t linesPerChunk)
+{
+    std::vector<SourceChunk> result;
+    std::istringstream iss(source);
+    std::string line;
+    std::string buffer;
+    size_t lineCount = 0;
+    while (std::getline(iss, line))
+    {
+        buffer += line + "\n";
+        lineCount++;
+        if (lineCount >= linesPerChunk)
+        {
+            result.push_back({buffer, true, {}});
+            buffer.clear();
+            lineCount = 0;
+        }
+    }
+    if (!buffer.empty())
+    {
+        result.push_back({buffer, true, {}});
+    }
+    return result;
+}
+
 void MultilevelLexer::processAll(std::vector<SourceChunk> &chunks)
 {
-    std::vector<std::future<std::vector<Token>>> futures;
+    std::vector<std::future<void>> futures;
     futures.reserve(chunks.size());
     for (auto &chunk : chunks)
     {
         if (!chunk.isDirty)
         {
-            futures.push_back(std::async(std::launch::deferred, [] { return std::vector<Token>{}; }));
             continue;
         }
-        futures.push_back(pool->postTask([this, &chunk] { return this->processChunk(chunk); }));
+        futures.push_back(pool->postTask([this, &chunk] {
+            chunk.tokens = processChunk(chunk);
+            chunk.isDirty = false;
+        }));
     }
-    for (size_t i = 0; i < chunks.size(); i++)
+    for (auto &f : futures)
     {
-        std::vector<Token> result = futures[i].get();
-        if (chunks[i].isDirty)
-        {
-            chunks[i].isDirty = false;
-        }
+        f.get();
     }
 }
 
-std::vector<Token> MultilevelLexer::processChunk(const SourceChunk &chunk)
+std::vector<Token> MultilevelLexer::processChunk(SourceChunk &chunk)
 {
     std::vector<Token> output;
     if (!layers.empty())

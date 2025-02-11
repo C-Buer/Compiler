@@ -23,6 +23,7 @@ struct SourceChunk
 {
     std::string content;
     bool isDirty;
+    std::vector<Token> tokens;
 };
 
 class LexerLevel

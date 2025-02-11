@@ -15,8 +15,9 @@ class MultilevelLexer
   public:
     MultilevelLexer();
     void addLayer(std::unique_ptr<LexerLevel> layer);
+    std::vector<SourceChunk> chunkify(const std::string &source, size_t linesPerChunk);
     void processAll(std::vector<SourceChunk> &chunks);
-    std::vector<Token> processChunk(const SourceChunk &chunk);
+    std::vector<Token> processChunk(SourceChunk &chunk);
 };
 
 #endif

@@ -3,7 +3,7 @@
 
 MultilevelLexer::MultilevelLexer()
 {
-    pool = std::make_unique<ThreadPool>(4);
+    pool = std::make_unique<ThreadPool>(2);
 }
 
 void MultilevelLexer::addLayer(std::unique_ptr<LexerLevel> layer)
@@ -38,26 +38,22 @@ std::vector<SourceChunk> MultilevelLexer::chunkify(const std::string &source, si
 
 void MultilevelLexer::processAll(std::vector<SourceChunk> &chunks)
 {
-    std::vector<std::future<void>> futures;
-    futures.reserve(chunks.size());
     for (auto &chunk : chunks)
     {
         if (!chunk.isDirty)
         {
             continue;
         }
-        futures.push_back(pool->postTask([this, &chunk] {
-            chunk.tokens = processChunk(chunk);
+        pool->postTask([this, &chunk] {
+            std::vector<Token> output = processChunk(chunk);
+            chunk.tokens = std::move(output);
             chunk.isDirty = false;
-        }));
+        });
     }
-    for (auto &f : futures)
-    {
-        f.get();
-    }
+    pool->waitAll();
 }
 
-std::vector<Token> MultilevelLexer::processChunk(SourceChunk &chunk)
+std::vector<Token> MultilevelLexer::processChunk(const SourceChunk &chunk)
 {
     std::vector<Token> output;
     if (!layers.empty())

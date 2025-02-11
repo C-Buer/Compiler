@@ -6,7 +6,6 @@
 #include <iostream>
 #include <random>
 
-
 static void printTokens(const std::vector<Token> &tokens)
 {
     for (auto &tk : tokens)
@@ -26,9 +25,11 @@ int main()
 
     MultilevelLexer lexer;
     lexer.addLayer(std::make_unique<FirstLayer>());
-    lexer.addLayer(std::make_unique<SecondLayer>());
+    auto secondLayer = std::make_unique<SecondLayer>();
+    secondLayer->addKeyword("while");
+    lexer.addLayer(std::move(secondLayer));
 
-    std::cout << "Splitting source into chunks..." << std::endl;
+    std::cout << "Creating chunks..." << std::endl;
     std::vector<SourceChunk> chunks = lexer.chunkify(sourceSample, 50);
 
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -43,7 +44,7 @@ int main()
     for (int i = 0; i < 10; i++)
     {
         int idx = dist(rng);
-        chunks[idx].content = "int y = 20; if(y == 0) { y=1; }";
+        chunks[idx].content = "int y = 20; if(y == 0) { y=1; } while(y < 5) {y++;}";
         chunks[idx].isDirty = true;
     }
 
@@ -56,7 +57,7 @@ int main()
     std::cout << "Printing modified chunks only:" << std::endl;
     for (size_t i = 0; i < chunks.size(); i++)
     {
-        if (!chunks[i].tokens.empty() && chunks[i].content.find("y") != std::string::npos)
+        if (chunks[i].content.find("y") != std::string::npos)
         {
             std::cout << "Chunk " << i << " tokens: ";
             printTokens(chunks[i].tokens);

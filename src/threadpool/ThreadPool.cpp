@@ -1,11 +1,11 @@
 #include "ThreadPool.hpp"
 
-ThreadPool::ThreadPool(size_t numThreads) : stop(false)
+ThreadPool::ThreadPool(size_t numThreads) : stop(false), activeTasks(0)
 {
     for (size_t i = 0; i < numThreads; i++)
     {
         workers.emplace_back([this] {
-            while (!this->stop)
+            while (true)
             {
                 std::function<void()> task;
                 {
@@ -19,6 +19,12 @@ ThreadPool::ThreadPool(size_t numThreads) : stop(false)
                     this->tasks.pop();
                 }
                 task();
+                activeTasks--;
+                if (activeTasks.load() == 0)
+                {
+                    std::unique_lock<std::mutex> lk(this->queueMutex);
+                    cvDone.notify_all();
+                }
             }
         });
     }
@@ -35,4 +41,20 @@ ThreadPool::~ThreadPool()
             t.join();
         }
     }
+}
+
+void ThreadPool::postTask(const std::function<void()> &task)
+{
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        tasks.push(task);
+        activeTasks++;
+    }
+    cv.notify_one();
+}
+
+void ThreadPool::waitAll()
+{
+    std::unique_lock<std::mutex> lock(queueMutex);
+    cvDone.wait(lock, [this] { return this->activeTasks.load() == 0; });
 }

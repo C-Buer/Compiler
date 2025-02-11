@@ -3,48 +3,61 @@
 
 std::vector<Token> FirstLayer::processChunk(const SourceChunk &chunk)
 {
-    std::vector<Token> tokens;
-    const std::string &text = chunk.content;
-    size_t start = 0;
-    size_t pos = 0;
-    while (pos <= text.size())
-    {
-        if (pos == text.size() || std::isspace((unsigned char)text[pos]))
-        {
-            if (pos > start)
-            {
-                std::string sub = text.substr(start, pos - start);
-                tokens.push_back(createToken(sub));
-            }
-            start = pos + 1;
-        }
-        pos++;
-    }
-    return tokens;
+    std::vector<std::string> rawTokens;
+    rawTokens.reserve(chunk.content.size() / 5 + 1);
+    splitIntoTokens(chunk.content, rawTokens);
+    std::vector<Token> result;
+    result.reserve(rawTokens.size());
+    classifyTokens(rawTokens, result);
+    return result;
 }
 
-Token FirstLayer::createToken(const std::string &sub)
+void FirstLayer::splitIntoTokens(const std::string &text, std::vector<std::string> &rawTokens)
 {
-    bool allDigits = true;
-    bool allAlpha = true;
-    for (char c : sub)
+    size_t length = text.size();
+    size_t start = 0;
+    for (size_t i = 0; i <= length; i++)
     {
-        if (!std::isdigit((unsigned char)c))
+        bool endPos = (i == length) || std::isspace((unsigned char)text[i]);
+        if (!endPos)
         {
-            allDigits = false;
+            continue;
         }
-        if (!std::isalpha((unsigned char)c))
+        if (i > start)
         {
-            allAlpha = false;
+            rawTokens.push_back(text.substr(start, i - start));
         }
+        start = i + 1;
     }
-    if (allDigits)
+}
+
+void FirstLayer::classifyTokens(const std::vector<std::string> &rawTokens, std::vector<Token> &outTokens)
+{
+    for (auto &sub : rawTokens)
     {
-        return {TokenType::Number, sub};
+        bool allDigits = true;
+        bool allAlpha = true;
+        for (char c : sub)
+        {
+            bool isDigit = (c >= '0' && c <= '9');
+            bool isAlpha = ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+            allDigits = allDigits && isDigit;
+            allAlpha = allAlpha && isAlpha;
+        }
+        Token tk;
+        if (allDigits)
+        {
+            tk.type = TokenType::Number;
+        }
+        else if (allAlpha)
+        {
+            tk.type = TokenType::Identifier;
+        }
+        else
+        {
+            tk.type = TokenType::Unknown;
+        }
+        tk.text = sub;
+        outTokens.push_back(std::move(tk));
     }
-    if (allAlpha)
-    {
-        return {TokenType::Identifier, sub};
-    }
-    return {TokenType::Unknown, sub};
 }

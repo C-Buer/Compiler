@@ -17,6 +17,8 @@ target("Lexer")
     add_files("src/Lexer/*.cpp")
     add_deps("ThreadPool")
 
+    add_vectorexts("all")
+
 target_end()
 
 target("cbuerc")
@@ -25,5 +27,7 @@ target("cbuerc")
 
     add_files("src/*.cpp")
     add_deps("Lexer")
+    
+    add_vectorexts("all")
 
 target_end()

@@ -9,7 +9,8 @@ class FirstLayer : public LexerLevel
     std::vector<Token> processChunk(const SourceChunk &chunk) override;
 
   private:
-    Token createToken(const std::string &sub);
+    void splitIntoTokens(const std::string &text, std::vector<std::string> &rawTokens);
+    void classifyTokens(const std::vector<std::string> &rawTokens, std::vector<Token> &outTokens);
 };
 
 #endif

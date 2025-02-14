@@ -1,83 +1,21 @@
-#include "lexer/ClassicLexer.hpp"
-#include "lexer/FirstLayer.hpp"
-#include "lexer/MultilevelLexer.hpp"
-#include "lexer/SecondLayer.hpp"
-#include <chrono>
+#include "Lexer/FirstLayer.hpp"
+#include "Lexer/MultilevelLexer.hpp"
+#include "Lexer/SecondLayer.hpp"
+#include "Lexer/SourceChunk.hpp"
 #include <iostream>
-#include <random>
-
-static void printTokens(const std::vector<Token> &tokens)
-{
-    for (auto &tk : tokens)
-    {
-        std::cout << tk.text << "(" << (int)tk.type << "," << tk.hash << ") ";
-    }
-    std::cout << std::endl;
-}
+#include <vector>
 
 int main()
 {
-    std::string sourceSample;
-    for (int i = 0; i < 50000; i++)
-    {
-        sourceSample += "int x = 10; if(x > 5) x = 0;\n";
-    }
-
+    std::vector<SourceChunk> chunks = {{"int main() { if(x>0){x=1;} }", true},
+                                       {"for(i=0;i<10;i++){ doSomething(); }", true}};
     MultilevelLexer lexer;
     lexer.addLayer(std::make_unique<FirstLayer>());
     lexer.addLayer(std::make_unique<SecondLayer>());
-
-    std::cout << "Adaptive chunkify..." << std::endl;
-    std::vector<SourceChunk> chunks = lexer.adaptiveChunkify(sourceSample);
-
-    auto t1 = std::chrono::high_resolution_clock::now();
     lexer.processAll(chunks);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto durationMultilevel = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    std::cout << "MultilevelLexer initial pass time (us): " << durationMultilevel << std::endl;
-
-    std::cout << "Simulating random modifications..." << std::endl;
-    std::mt19937 rng(12345);
-    std::uniform_int_distribution<int> dist(0, (int)chunks.size() - 1);
-    for (int i = 0; i < 10; i++)
+    for (const auto &chunk : chunks)
     {
-        int idx = dist(rng);
-        chunks[idx].content = "int y = 20; if(y == 0) { y=1; } while(y < 5) { y++; }";
-        chunks[idx].isDirty = true;
+        std::cout << chunk.content << "\n";
     }
-
-    auto t3 = std::chrono::high_resolution_clock::now();
-    lexer.processAll(chunks);
-    auto t4 = std::chrono::high_resolution_clock::now();
-    auto durationMultilevelIncremental = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
-    std::cout << "MultilevelLexer incremental pass time (us): " << durationMultilevelIncremental << std::endl;
-
-    for (size_t i = 0; i < chunks.size(); i++)
-    {
-        if (chunks[i].content.find("y") != std::string::npos)
-        {
-            std::cout << "Chunk " << i << " tokens: ";
-            printTokens(chunks[i].tokens);
-        }
-    }
-
-    ClassicLexer classic;
-    std::string combinedSource;
-    for (auto &c : chunks)
-    {
-        combinedSource += c.content + "\n";
-    }
-
-    auto t5 = std::chrono::high_resolution_clock::now();
-    auto classicTokens = classic.processFullSource(combinedSource);
-    auto t6 = std::chrono::high_resolution_clock::now();
-    auto durationClassic = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
-    std::cout << "ClassicLexer time (us): " << durationClassic << std::endl;
-
-    std::cout << "Performance Summary:" << std::endl;
-    std::cout << "MultilevelLexer (Initial): " << durationMultilevel << " us" << std::endl;
-    std::cout << "MultilevelLexer (Incremental): " << durationMultilevelIncremental << " us" << std::endl;
-    std::cout << "ClassicLexer: " << durationClassic << " us" << std::endl;
-
     return 0;
 }

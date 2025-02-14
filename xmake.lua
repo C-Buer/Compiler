@@ -2,20 +2,11 @@ add_rules("mode.release", "mode.debug")
 
 add_languages("cxx20")
 
-target("ThreadPool")
-    set_kind("static")
-    set_encodings("utf-8")
-
-    add_files("src/threadpool/*.cpp")
-
-target_end()
-
 target("Lexer")
     set_kind("static")
     set_encodings("utf-8")
 
     add_files("src/Lexer/*.cpp")
-    add_deps("ThreadPool")
 
     add_vectorexts("all")
 

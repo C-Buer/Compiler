@@ -1,75 +1,36 @@
 #include "FirstLayer.hpp"
+#include <string_view>
+#include <vector>
 
+static inline bool is_whitespace(char c)
+{
+    return c == ' ' || c == '\n' || c == '\t' || c == '\r';
+}
 std::vector<Token> FirstLayer::processChunk(const SourceChunk &chunk)
 {
-    std::vector<std::string> rawTokens;
-    rawTokens.reserve(chunk.content.size() / 5 + 1);
-    splitIntoTokens(chunk.content, rawTokens);
-    std::vector<Token> result;
-    result.reserve(rawTokens.size());
-    classifyTokens(rawTokens, result);
-    return result;
-}
-
-void FirstLayer::splitIntoTokens(const std::string &text, std::vector<std::string> &rawTokens)
-{
-    size_t length = text.size();
-    size_t start = 0;
-    for (size_t i = 0; i <= length; i++)
+    std::string_view sv(chunk.content);
+    std::vector<Token> tokens;
+    tokens.reserve(sv.size() / 4);
+    size_t i = 0;
+    size_t n = sv.size();
+    while (i < n)
     {
-        bool boundary = (i == length) || (unsigned char)text[i] <= ' ';
-        if (!boundary)
+        while (i < n && is_whitespace(sv[i]))
         {
-            continue;
+            i++;
         }
-        if (i > start)
+        if (i >= n)
+            break;
+        size_t start = i;
+        while (i < n && !is_whitespace(sv[i]))
         {
-            rawTokens.push_back(text.substr(start, i - start));
+            i++;
         }
-        start = i + 1;
+        tokens.push_back(Token{TokenType::Identifier, std::string(sv.substr(start, i - start))});
     }
+    return tokens;
 }
-
-void FirstLayer::classifyTokens(const std::vector<std::string> &rawTokens, std::vector<Token> &outTokens)
+std::vector<Token> FirstLayer::processTokens(const std::vector<Token> &tokens)
 {
-    for (auto &sub : rawTokens)
-    {
-        bool allDigits = true;
-        bool allAlpha = true;
-        for (char c : sub)
-        {
-            bool isDigit = (c >= '0' && c <= '9');
-            bool isAlpha = ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
-            allDigits = allDigits && isDigit;
-            allAlpha = allAlpha && isAlpha;
-        }
-        Token tk;
-        tk.hash = 0;
-        if (allDigits)
-        {
-            tk.type = TokenType::Number;
-        }
-        else if (allAlpha)
-        {
-            tk.type = TokenType::Identifier;
-            tk.hash = fnv1aHash(sub);
-        }
-        else
-        {
-            tk.type = TokenType::Unknown;
-        }
-        tk.text = sub;
-        outTokens.push_back(std::move(tk));
-    }
-}
-
-std::uint32_t FirstLayer::fnv1aHash(const std::string &str)
-{
-    std::uint32_t hashVal = 2166136261u;
-    for (char c : str)
-    {
-        hashVal ^= (std::uint8_t)c;
-        hashVal *= 16777619u;
-    }
-    return hashVal;
+    return tokens;
 }

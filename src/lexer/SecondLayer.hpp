@@ -2,18 +2,20 @@
 #define SECONDLAYER_HPP
 
 #include "LexerLevel.hpp"
-#include <string>
-#include <unordered_set>
 
+enum class KnownKeyword
+{
+    IF,
+    FOR,
+    WHILE,
+    NONE
+};
+
+KnownKeyword checkKeyword(std::uint32_t hash, const std::string &text);
 
 class SecondLayer : public LexerLevel
 {
-  private:
-    std::unordered_set<std::string> keywords;
-
   public:
-    SecondLayer();
-    void addKeyword(const std::string &kw);
     std::vector<Token> processTokens(const std::vector<Token> &tokens) override;
 };
 

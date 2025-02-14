@@ -1,5 +1,4 @@
 #include "FirstLayer.hpp"
-#include <cctype>
 
 std::vector<Token> FirstLayer::processChunk(const SourceChunk &chunk)
 {
@@ -18,8 +17,8 @@ void FirstLayer::splitIntoTokens(const std::string &text, std::vector<std::strin
     size_t start = 0;
     for (size_t i = 0; i <= length; i++)
     {
-        bool endPos = (i == length) || std::isspace((unsigned char)text[i]);
-        if (!endPos)
+        bool boundary = (i == length) || (unsigned char)text[i] <= ' ';
+        if (!boundary)
         {
             continue;
         }
@@ -45,6 +44,7 @@ void FirstLayer::classifyTokens(const std::vector<std::string> &rawTokens, std::
             allAlpha = allAlpha && isAlpha;
         }
         Token tk;
+        tk.hash = 0;
         if (allDigits)
         {
             tk.type = TokenType::Number;
@@ -52,6 +52,7 @@ void FirstLayer::classifyTokens(const std::vector<std::string> &rawTokens, std::
         else if (allAlpha)
         {
             tk.type = TokenType::Identifier;
+            tk.hash = fnv1aHash(sub);
         }
         else
         {
@@ -60,4 +61,15 @@ void FirstLayer::classifyTokens(const std::vector<std::string> &rawTokens, std::
         tk.text = sub;
         outTokens.push_back(std::move(tk));
     }
+}
+
+std::uint32_t FirstLayer::fnv1aHash(const std::string &str)
+{
+    std::uint32_t hashVal = 2166136261u;
+    for (char c : str)
+    {
+        hashVal ^= (std::uint8_t)c;
+        hashVal *= 16777619u;
+    }
+    return hashVal;
 }

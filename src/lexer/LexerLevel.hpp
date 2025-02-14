@@ -1,6 +1,7 @@
 #ifndef LEXERLEVEL_HPP
 #define LEXERLEVEL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@ struct Token
 {
     TokenType type;
     std::string text;
+    std::uint32_t hash;
 };
 
 struct SourceChunk

@@ -10,7 +10,7 @@ static void printTokens(const std::vector<Token> &tokens)
 {
     for (auto &tk : tokens)
     {
-        std::cout << tk.text << "(" << (int)tk.type << ") ";
+        std::cout << tk.text << "(" << (int)tk.type << "," << tk.hash << ") ";
     }
     std::cout << std::endl;
 }
@@ -18,19 +18,17 @@ static void printTokens(const std::vector<Token> &tokens)
 int main()
 {
     std::string sourceSample;
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 50000; i++)
     {
         sourceSample += "int x = 10; if(x > 5) x = 0;\n";
     }
 
     MultilevelLexer lexer;
     lexer.addLayer(std::make_unique<FirstLayer>());
-    auto secondLayer = std::make_unique<SecondLayer>();
-    secondLayer->addKeyword("while");
-    lexer.addLayer(std::move(secondLayer));
+    lexer.addLayer(std::make_unique<SecondLayer>());
 
-    std::cout << "Creating chunks..." << std::endl;
-    std::vector<SourceChunk> chunks = lexer.chunkify(sourceSample, 50);
+    std::cout << "Adaptive chunkify..." << std::endl;
+    std::vector<SourceChunk> chunks = lexer.adaptiveChunkify(sourceSample);
 
     auto t1 = std::chrono::high_resolution_clock::now();
     lexer.processAll(chunks);
@@ -44,7 +42,7 @@ int main()
     for (int i = 0; i < 10; i++)
     {
         int idx = dist(rng);
-        chunks[idx].content = "int y = 20; if(y == 0) { y=1; } while(y < 5) {y++;}";
+        chunks[idx].content = "int y = 20; if(y == 0) { y=1; } while(y < 5) { y++; }";
         chunks[idx].isDirty = true;
     }
 
@@ -54,7 +52,6 @@ int main()
     auto durationMultilevelIncremental = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
     std::cout << "MultilevelLexer incremental pass time (us): " << durationMultilevelIncremental << std::endl;
 
-    std::cout << "Printing modified chunks only:" << std::endl;
     for (size_t i = 0; i < chunks.size(); i++)
     {
         if (chunks[i].content.find("y") != std::string::npos)

@@ -3,18 +3,23 @@
 #include <cctype>
 #include <future>
 
+
+std::unordered_set<std::string> Lexer::s_keywords;
+
 Lexer::Lexer(std::string_view input) : m_input(input), m_pos(0), m_line(1), m_column(1)
 {
 }
-std::unordered_set<std::string> Lexer::s_keywords;
+
 void Lexer::addKeyword(const std::string &keyword)
 {
     s_keywords.insert(keyword);
 }
+
 char Lexer::current() const
 {
     return m_input[m_pos];
 }
+
 void Lexer::advance()
 {
     if (current() == '\n')
@@ -28,14 +33,17 @@ void Lexer::advance()
     }
     m_pos++;
 }
+
 bool Lexer::isAtEnd() const
 {
     return m_pos >= m_input.size();
 }
+
 Token Lexer::finishToken(TokenType type, std::string_view lexeme, std::size_t startLine, std::size_t startColumn)
 {
     return {type, lexeme, startLine, startColumn};
 }
+
 Token Lexer::scanToken()
 {
     while (!isAtEnd() && std::isspace(current()))
@@ -82,6 +90,7 @@ Token Lexer::scanToken()
     advance();
     return finishToken(TokenType::Operator, m_input.substr(startPos, m_pos - startPos), startLine, startColumn);
 }
+
 std::vector<Token> Lexer::tokenizeLevel1(std::string_view chunk)
 {
     std::vector<Token> tokens;
@@ -92,6 +101,7 @@ std::vector<Token> Lexer::tokenizeLevel1(std::string_view chunk)
     }
     return tokens;
 }
+
 std::vector<Token> Lexer::tokenizeLevel2(const std::vector<Token> &tokens)
 {
     std::vector<Token> refined = tokens;
@@ -107,6 +117,7 @@ std::vector<Token> Lexer::tokenizeLevel2(const std::vector<Token> &tokens)
     }
     return refined;
 }
+
 std::vector<Token> Lexer::tokenize()
 {
     std::vector<Token> tokens;
@@ -116,6 +127,7 @@ std::vector<Token> Lexer::tokenize()
     }
     return tokenizeLevel2(tokens);
 }
+
 std::vector<Token> Lexer::tokenizeMultiThread(std::string_view input, std::size_t chunkSize)
 {
     std::vector<Token> tokens;
@@ -151,6 +163,7 @@ std::vector<Token> Lexer::tokenizeMultiThread(std::string_view input, std::size_
     });
     return tokens;
 }
+
 std::vector<Token> Lexer::incrementalTokenize(std::string_view chunk, std::size_t startLine, std::size_t startColumn)
 {
     Lexer lexer(chunk);
@@ -163,5 +176,5 @@ std::vector<Token> Lexer::incrementalTokenize(std::string_view chunk, std::size_
             token.column += (startColumn - 1);
         }
     }
-    return tokenizeLevel2(tokens);
+    return lexer.tokenizeLevel2(tokens);
 }

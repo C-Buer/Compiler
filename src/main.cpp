@@ -11,7 +11,7 @@ int main()
     Lexer::addKeyword("while");
     Lexer::addKeyword("return");
     std::string testInput;
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 1000000; i++)
     {
         testInput += "int a = 123; if(a){ a = a + 1; } ";
     }
@@ -28,7 +28,7 @@ int main()
               << " ms\n";
     std::cout << "Multithread Lexer tokens: " << tokensMulti.size() << " time: " << durationMulti << " ms\n";
     std::string changedChunk = "int b = 456; else { b = b - 1; }";
-    auto incrementalTokens = traditionalLexer.incrementalTokenize(changedChunk, 50, 10);
+    auto incrementalTokens = Lexer::incrementalTokenize(changedChunk, 50, 10);
     std::cout << "Incremental tokens: " << incrementalTokens.size() << "\n";
     std::cout << "First 5 tokens from traditional lexing:\n";
     for (int i = 0; i < 5 && i < tokensTraditional.size(); i++)

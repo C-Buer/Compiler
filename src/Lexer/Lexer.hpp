@@ -1,10 +1,12 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
+
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <unordered_set>
 #include <vector>
+
 
 enum class TokenType
 {
@@ -17,6 +19,7 @@ enum class TokenType
     EndOfFile,
     Unknown
 };
+
 struct Token
 {
     TokenType type;
@@ -24,13 +27,15 @@ struct Token
     std::size_t line;
     std::size_t column;
 };
+
 class Lexer
 {
   public:
     Lexer(std::string_view input);
     std::vector<Token> tokenize();
     static std::vector<Token> tokenizeMultiThread(std::string_view input, std::size_t chunkSize);
-    std::vector<Token> incrementalTokenize(std::string_view chunk, std::size_t startLine, std::size_t startColumn);
+    static std::vector<Token> incrementalTokenize(std::string_view chunk, std::size_t startLine,
+                                                  std::size_t startColumn);
     static std::unordered_set<std::string> s_keywords;
     static void addKeyword(const std::string &keyword);
 

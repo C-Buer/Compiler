@@ -3,7 +3,6 @@
 #include <cctype>
 #include <future>
 
-
 std::unordered_set<std::string> Lexer::s_keywords;
 
 Lexer::Lexer(std::string_view input) : m_input(input), m_pos(0), m_line(1), m_column(1)

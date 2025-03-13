@@ -1,92 +1,69 @@
 %option noyywrap
 %option unicode
+%option lex
+%option bison-locations
+
 %{
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include "Token.hpp"
-
-static int line = 1;
-static int col = 1;
-static std::vector<Token> tokens;
-
-static void addToken(TokenType type, const std::string &lexeme) {
-    tokens.emplace_back(type, lexeme, line, col);
-    col += static_cast<int>(lexeme.size());
-}
 %}
+
+%class{
+public:
+    Lexer(){}
+    int lex();
+    std::vector<Token> tokens;
+private:
+    void addToken(TokenType t, const std::string &lexeme, int ln, int col) 
+    {
+        tokens.emplace_back(t, lexeme, ln, col);
+    }
+};
 
 %%
 
-[\r\n]+ {
-    line += yyleng;
-    col = 1;
-}
-
-[ \t]+ {
-    col += yyleng;
-}
-
-/* 单字符 */
-"("             { addToken(TokenType::LeftParen, yytext); }
-")"             { addToken(TokenType::RightParen, yytext); }
-"{"             { addToken(TokenType::LeftBrace, yytext); }
-"}"             { addToken(TokenType::RightBrace, yytext); }
-"["             { addToken(TokenType::LeftBracket, yytext); }
-"]"             { addToken(TokenType::RightBracket, yytext); }
-","             { addToken(TokenType::Comma, yytext); }
-"."             { addToken(TokenType::Dot, yytext); }
-";"             { addToken(TokenType::Semicolon, yytext); }
-":"             { addToken(TokenType::Colon, yytext); }
-"+"             { addToken(TokenType::Plus, yytext); }
-"-"             { addToken(TokenType::Minus, yytext); }
-"*"             { addToken(TokenType::Star, yytext); }
-"/"             { addToken(TokenType::Slash, yytext); }
-"%"             { addToken(TokenType::Percent, yytext); }
-"&"             { addToken(TokenType::Ampersand, yytext); }
-"|"             { addToken(TokenType::Pipe, yytext); }
-"^"             { addToken(TokenType::Caret, yytext); }
-"!"             { addToken(TokenType::Exclamation, yytext); }
-"~"             { addToken(TokenType::Tilde, yytext); }
-"?"             { addToken(TokenType::Question, yytext); }
-"<"             { addToken(TokenType::Less, yytext); }
-">"             { addToken(TokenType::Greater, yytext); }
-"="             { addToken(TokenType::Equals, yytext); }
-
-/* 双字符 */
-"=="            { addToken(TokenType::DoubleEquals, yytext); }
-"!="            { addToken(TokenType::NotEquals, yytext); }
-"<="            { addToken(TokenType::LessEquals, yytext); }
-">="            { addToken(TokenType::GreaterEquals, yytext); }
-"&&"            { addToken(TokenType::DoubleAmpersand, yytext); }
-"||"            { addToken(TokenType::DoublePipe, yytext); }
-"->"            { addToken(TokenType::Arrow, yytext); }
-"::"            { addToken(TokenType::Scope, yytext); }
-"++"            { addToken(TokenType::Increment, yytext); }
-"--"            { addToken(TokenType::Decrement, yytext); }
-"<<"            { addToken(TokenType::LShift, yytext); }
-">>"            { addToken(TokenType::RShift, yytext); }
-
-/* 三字符 */
-"..."           { addToken(TokenType::Ellipsis, yytext); }
-
-/* 字面量 */
-\"([^\"\\]|\\.)*\"  { addToken(TokenType::StringLiteral, yytext); }
-\'([^\'\\]|\\.)*\'  { addToken(TokenType::CharLiteral, yytext); }
-
-/* 浮点 + 整型：先匹配浮点，再匹配纯数字 */
-[0-9]+(\.[0-9]+)    { addToken(TokenType::FloatingLiteral, yytext); }
-[0-9]+              { addToken(TokenType::IntegerLiteral, yytext); }
-
-/*
-  关键字/标识符：
-  这里用POSIX字符类 [:alpha:] 和 [:alnum:] 来替代 \p{L} 等，
-  在re/flex开启unicode编译的情况下，一般可识别绝大部分Unicode字母及数字。
-  首字符：[[:alpha:]_]
-  后续字符：[[:alnum:]_]
-*/
+[\r\n]+         { yylloc->lines(yylloc->lines() + 1); yylloc->step(); }
+[ \t]+          { yylloc->step(); }
+"("             { addToken(TokenType::LeftParen,yytext , yylloc->last_line, yylloc->last_column); }
+")"             { addToken(TokenType::RightParen,yytext , yylloc->last_line, yylloc->last_column); }
+"{"             { addToken(TokenType::LeftBrace,yytext , yylloc->last_line, yylloc->last_column); }
+"}"             { addToken(TokenType::RightBrace,yytext , yylloc->last_line, yylloc->last_column); }
+"["             { addToken(TokenType::LeftBracket,yytext , yylloc->last_line, yylloc->last_column); }
+"]"             { addToken(TokenType::RightBracket,yytext , yylloc->last_line, yylloc->last_column); }
+","             { addToken(TokenType::Comma,yytext , yylloc->last_line, yylloc->last_column); }
+"."             { addToken(TokenType::Dot,yytext , yylloc->last_line, yylloc->last_column); }
+";"             { addToken(TokenType::Semicolon,yytext , yylloc->last_line, yylloc->last_column); }
+":"             { addToken(TokenType::Colon,yytext , yylloc->last_line, yylloc->last_column); }
+"+"             { addToken(TokenType::Plus,yytext , yylloc->last_line, yylloc->last_column); }
+"-"             { addToken(TokenType::Minus,yytext , yylloc->last_line, yylloc->last_column); }
+"*"             { addToken(TokenType::Star,yytext , yylloc->last_line, yylloc->last_column); }
+"/"             { addToken(TokenType::Slash,yytext , yylloc->last_line, yylloc->last_column); }
+"%"             { addToken(TokenType::Percent,yytext , yylloc->last_line, yylloc->last_column); }
+"&"             { addToken(TokenType::Ampersand,yytext , yylloc->last_line, yylloc->last_column); }
+"|"             { addToken(TokenType::Pipe,yytext , yylloc->last_line, yylloc->last_column); }
+"^"             { addToken(TokenType::Caret,yytext , yylloc->last_line, yylloc->last_column); }
+"!"             { addToken(TokenType::Exclamation,yytext , yylloc->last_line, yylloc->last_column); }
+"~"             { addToken(TokenType::Tilde,yytext , yylloc->last_line, yylloc->last_column); }
+"?"             { addToken(TokenType::Question,yytext , yylloc->last_line, yylloc->last_column); }
+"<"             { addToken(TokenType::Less,yytext , yylloc->last_line, yylloc->last_column); }
+">"             { addToken(TokenType::Greater,yytext , yylloc->last_line, yylloc->last_column); }
+"="             { addToken(TokenType::Equals,yytext , yylloc->last_line, yylloc->last_column); }
+"=="            { addToken(TokenType::DoubleEquals,yytext , yylloc->last_line, yylloc->last_column); }
+"!="            { addToken(TokenType::NotEquals,yytext , yylloc->last_line, yylloc->last_column); }
+"<="            { addToken(TokenType::LessEquals,yytext , yylloc->last_line, yylloc->last_column); }
+">="            { addToken(TokenType::GreaterEquals,yytext , yylloc->last_line, yylloc->last_column); }
+"&&"            { addToken(TokenType::DoubleAmpersand,yytext , yylloc->last_line, yylloc->last_column); }
+"||"            { addToken(TokenType::DoublePipe,yytext , yylloc->last_line, yylloc->last_column); }
+"->"            { addToken(TokenType::Arrow,yytext , yylloc->last_line, yylloc->last_column); }
+"::"            { addToken(TokenType::Scope, yytext, yylloc->last_line, yylloc->last_column); }
+"++"            { addToken(TokenType::Increment, yytext, yylloc->last_line, yylloc->last_column); }
+"--"            { addToken(TokenType::Decrement, yytext, yylloc->last_line, yylloc->last_column); }
+"<<"            { addToken(TokenType::LShift, yytext, yylloc->last_line, yylloc->last_column); }
+">>"            { addToken(TokenType::RShift, yytext, yylloc->last_line, yylloc->last_column); }
+[0-9]+          { addToken(TokenType::IntegerLiteral, yytext, yylloc->last_line, yylloc->last_column); }
 [[:alpha:]_][[:alnum:]_]* {
-    static std::unordered_map<std::string, TokenType> keywords = {
+        static std::unordered_map<std::string, TokenType> keywords = {
         {"auto",      TokenType::Auto},
         {"struct",    TokenType::Struct},
         {"class",     TokenType::Class},
@@ -128,25 +105,24 @@ static void addToken(TokenType type, const std::string &lexeme) {
 
     std::string text = yytext;
     auto it = keywords.find(text);
-    if (it != keywords.end()) {
-        addToken(it->second, text);
-    } else {
-        addToken(TokenType::Identifier, text);
+    if (it != keywords.end()) 
+    {
+        addToken(it->second, text), yylloc->last_line, yylloc->last_column;
+    } else 
+    {
+        addToken(TokenType::Identifier, text, yylloc->last_line, yylloc->last_column);
     }
 }
+. { addToken(TokenType::Invalid, yytext, yylloc->last_line, yylloc->last_column); }
 
-/* 无法识别的 */
-. {
-    addToken(TokenType::Invalid, yytext);
-}
 %%
 
-int main() {
-    yylex();
-    for (auto &t : tokens) {
-        // 输出：类型(枚举值) 词素 行 列
-        std::cout << static_cast<int>(t.type) << " " << t.lexeme << " "
-                  << t.line << " " << t.column << std::endl;
+int Lexer::lex() 
+{
+    while(true) 
+    {
+        int r = yylex();
+        if(r == 0) break;
     }
     return 0;
 }

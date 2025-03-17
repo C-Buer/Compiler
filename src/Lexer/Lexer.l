@@ -10,11 +10,7 @@
 %}
 
 %class{
-public:
-    Lexer(){}
-    int lex();
     std::vector<Token> tokens;
-private:
     void addToken(TokenType t, const std::string &lexeme, int ln, int col) 
     {
         tokens.emplace_back(t, lexeme, ln, col);
@@ -116,13 +112,3 @@ private:
 . { addToken(TokenType::Invalid, yytext, yylloc->last_line, yylloc->last_column); }
 
 %%
-
-int Lexer::lex() 
-{
-    while(true) 
-    {
-        int r = yylex();
-        if(r == 0) break;
-    }
-    return 0;
-}

@@ -19,8 +19,6 @@
 
 %%
 
-[\r\n]+         { yylloc->lines(yylloc->lines() + 1); yylloc->step(); }
-[ \t]+          { yylloc->step(); }
 "("             { addToken(TokenType::LeftParen,yytext , yylloc->last_line, yylloc->last_column); }
 ")"             { addToken(TokenType::RightParen,yytext , yylloc->last_line, yylloc->last_column); }
 "{"             { addToken(TokenType::LeftBrace,yytext , yylloc->last_line, yylloc->last_column); }
